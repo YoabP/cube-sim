@@ -20,33 +20,33 @@
 	<body>
     <div class ="UI">
       <button type="button" class='red'
-        onclick="rubik.rotate('F');rubik._recolorSocketCubies()">CW</button>
+        onclick="rubik.rotate('F');rubik.updateRenderer()">CW</button>
       <button type="button" class='red'
-        onclick="rubik.rotate('F*');rubik._recolorSocketCubies()">CCW</button>
+        onclick="rubik.rotate('F*');rubik.updateRenderer()">CCW</button>
       <button type="button" class='orange'
-        onclick="rubik.rotate('B');rubik._recolorSocketCubies()">CW</button>
+        onclick="rubik.rotate('B');rubik.updateRenderer()">CW</button>
       <button type="button" class='orange'
-        onclick="rubik.rotate('B*');rubik._recolorSocketCubies()">CCW</button>
+        onclick="rubik.rotate('B*');rubik.updateRenderer()">CCW</button>
       <button type="button" class='blue'
-        onclick="rubik.rotate('R');rubik._recolorSocketCubies()">CW</button>
+        onclick="rubik.rotate('R');rubik.updateRenderer()">CW</button>
       <button type="button" class='blue'
-        onclick="rubik.rotate('R*');rubik._recolorSocketCubies()">CCW</button>
+        onclick="rubik.rotate('R*');rubik.updateRenderer()">CCW</button>
       <button type="button" class='green'
-        onclick="rubik.rotate('L');rubik._recolorSocketCubies()">CW</button>
+        onclick="rubik.rotate('L');rubik.updateRenderer()">CW</button>
       <button type="button" class='green'
-        onclick="rubik.rotate('L*');rubik._recolorSocketCubies()">CCW</button>
+        onclick="rubik.rotate('L*');rubik.updateRenderer()">CCW</button>
       <button type="button" class='white'
-        onclick="rubik.rotate('U');rubik._recolorSocketCubies()">CW</button>
+        onclick="rubik.rotate('U');rubik.updateRenderer()">CW</button>
       <button type="button" class='white'
-        onclick="rubik.rotate('U*');rubik._recolorSocketCubies()">CCW</button>
+        onclick="rubik.rotate('U*');rubik.updateRenderer()">CCW</button>
       <button type="button" class='yellow'
-        onclick="rubik.rotate('D');rubik._recolorSocketCubies()">CW</button>
+        onclick="rubik.rotate('D');rubik.updateRenderer()">CW</button>
       <button type="button" class='yellow'
-        onclick="rubik.rotate('D*');rubik._recolorSocketCubies()">CCW</button>
+        onclick="rubik.rotate('D*');rubik.updateRenderer()">CCW</button>
       <button type="button"
-        onclick="rubik.rotate('D*');rubik._recolorSocketCubies()">Scramble</button>
+        onclick="scramble()">Scramble</button>
       <button type="button"
-        onclick="rubik.rotate('D*');rubik._recolorSocketCubies()">Restore</button>
+        onclick="restore()">Restore</button>
     </div>
 		<script src="js/three.js"></script>
     <script src="js/OrbitControls.js"></script>
@@ -89,7 +89,7 @@
       var rubik = new CUBES.Cube333();
       rubik.initRenderer();
       scene.add(rubik.object3D);
-      rubik._recolorSocketCubies()
+      rubik.updateRenderer()
       //Drawing loop
       function render() {
       	requestAnimationFrame( render );
@@ -97,6 +97,25 @@
       }
       render();
       //Button controls for now
+      function restore(){
+        scene.remove(rubik.object3D);
+        rubik = new CUBES.Cube333();
+        rubik.initRenderer();
+        scene.add(rubik.object3D);
+      }
+      var moves =['U','D','L','R','F','B'];
+      function scramble(){
+        for (var i = 0; i < 30; i++) {
+          var index = getRandomIntInclusive(0,moves.length-1);
+          rubik.rotate(moves[index]);
+        }
+        rubik.updateRenderer();
+      }
+      function getRandomIntInclusive(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
 		</script>
 	</body>
 </html>

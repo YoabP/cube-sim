@@ -246,7 +246,6 @@ CUBES.Cube333 = class Cube333 {
             this.object3D.add(this.centers[center].cubie.object3D);
         }
       }
-      console.log("TRU");
       this._positionSocketCubies(sz );
       this._positionCenterCubies(sz);
   }
@@ -277,9 +276,9 @@ CUBES.Cube333 = class Cube333 {
 
   updateRenderer(){
     //Check model and recolor pieces accordingly
-    //
+    this._recolorSocketCubies()
   }
-  _recolorSocketCubies(size){
+  _recolorSocketCubies(){
     for (var y = 0; y < 3; y++) {
       for (var z = 0; z < 3; z++) {
         for (var x = 0; x < 3; x++) {
