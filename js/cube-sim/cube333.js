@@ -1,5 +1,6 @@
 //Common 3x3x3 cubic puzzle
 "use strict";
+
 CUBES.Cube333 = class Cube333 {
   //Description:
   // Face turning, cube puzzle
@@ -80,7 +81,7 @@ CUBES.Cube333 = class Cube333 {
       colors:[CUBES.Colors.W, CUBES.Colors.G, CUBES.Colors.O]
     });
     this.sockets[1].piece = new CUBES.Edge({
-      colors:[CUBES.Colors.W,CUBES.Colors.G]
+      colors:[CUBES.Colors.W,CUBES.Colors.O]
     });
     this.sockets[2].piece = new CUBES.Corner({
       colors: [CUBES.Colors.W,CUBES.Colors.O,CUBES.Colors.B]
@@ -88,13 +89,13 @@ CUBES.Cube333 = class Cube333 {
     this.sockets[3].piece =new CUBES.Edge({
       colors:[CUBES.Colors.W,CUBES.Colors.B]
     });
-    this.sockets[4].piece =new CUBES.Edge({
+    this.sockets[4].piece =new CUBES.Corner({
       colors:[CUBES.Colors.W,CUBES.Colors.B,CUBES.Colors.R]
     });
     this.sockets[5].piece =new CUBES.Edge({
       colors:[CUBES.Colors.W, CUBES.Colors.R]
     });
-    this.sockets[6].piece =new CUBES.Edge({
+    this.sockets[6].piece =new CUBES.Corner({
       colors:[CUBES.Colors.W,CUBES.Colors.R,CUBES.Colors.G]
     });
     this.sockets[7].piece =new CUBES.Edge({
@@ -114,25 +115,25 @@ CUBES.Cube333 = class Cube333 {
     this.sockets[11].piece =new CUBES.Edge({
       colors:[CUBES.Colors.R, CUBES.Colors.G]
     });
-    this.sockets[12].piece =new CUBES.Edge({
+    this.sockets[12].piece =new CUBES.Corner({
       colors:[CUBES.Colors.Y, CUBES.Colors.O, CUBES.Colors.G]
     });
     this.sockets[13].piece =new CUBES.Edge({
       colors:[CUBES.Colors.Y, CUBES.Colors.O]
     });
-    this.sockets[14].piece =new CUBES.Edge({
+    this.sockets[14].piece =new CUBES.Corner({
       colors:[CUBES.Colors.Y, CUBES.Colors.B, CUBES.Colors.O]
     });
     this.sockets[15].piece =new CUBES.Edge({
       colors:[CUBES.Colors.Y, CUBES.Colors.B]
     });
-    this.sockets[16].piece =new CUBES.Edge({
+    this.sockets[16].piece =new CUBES.Corner({
       colors:[CUBES.Colors.Y,CUBES.Colors.R,CUBES.Colors.B]
     });
     this.sockets[17].piece =new CUBES.Edge({
       colors:[CUBES.Colors.Y,CUBES.Colors.R]
     });
-    this.sockets[18].piece =new CUBES.Edge({
+    this.sockets[18].piece =new CUBES.Corner({
       colors:[CUBES.Colors.Y,CUBES.Colors.G,CUBES.Colors.R]
     });
     this.sockets[19].piece =new CUBES.Edge({
@@ -217,4 +218,153 @@ CUBES.Cube333 = class Cube333 {
         break;
     }
   }
+  //Builds a cube made of the pieces in the cube.
+  // TODO: make it animation ready. May need to change to a more loosee
+  //  logic - visualization scheme. For now this will serve for logic testing
+  //  as the renderer will follow logical model exactly.
+  initRenderer(){
+      var cols = {
+        F: CUBES.Colors.R,
+        B: CUBES.Colors.O,
+        L: CUBES.Colors.G,
+        R: CUBES.Colors.B,
+        U: CUBES.Colors.W,
+        D: CUBES.Colors.Y
+      }
+      var sz = 1;
+      this.object3D = new THREE.Object3D();
+      //create cubies
+      for (var i = 0; i < this.sockets.length; i++) {
+        this.sockets[i].cubie = new CUBES.ColoredCube(sz);
+        this.sockets[i].cubie.setColors(cols);
+        this.object3D.add(this.sockets[i].cubie.object3D);
+      }
+      for (var center in this.centers) {
+        if (this.centers.hasOwnProperty(center)) {
+            this.centers[center].cubie = new CUBES.ColoredCube(sz);
+            this.centers[center].cubie.setColors(cols);
+            this.object3D.add(this.centers[center].cubie.object3D);
+        }
+      }
+      console.log("TRU");
+      this._positionSocketCubies(sz );
+      this._positionCenterCubies(sz);
+  }
+  _positionSocketCubies(size){
+    for (var y = 0; y < 3; y++) {
+      for (var z = 0; z < 3; z++) {
+        for (var x = 0; x < 3; x++) {
+          var i = CUBES.Cube333.pieceSocketMap[y][z][x];
+          if(i == 'c' || i == null) continue;
+           var cubie = this.sockets[i].cubie.object3D;
+           cubie.position.x = size*x -size;
+           cubie.position.y = size*y -size;
+           cubie.position.z = size*z -size;
+        }
+      }
+    }
+  }
+  _positionCenterCubies(size){
+    this.centers['U'].cubie.object3D.position.y = size;
+    this.centers['D'].cubie.object3D.position.y = -size;
+
+    this.centers['R'].cubie.object3D.position.x = size;
+    this.centers['L'].cubie.object3D.position.x = -size;
+
+    this.centers['F'].cubie.object3D.position.z = size;
+    this.centers['B'].cubie.object3D.position.z = -size;
+  }
+
+  updateRenderer(){
+    //Check model and recolor pieces accordingly
+    //
+  }
+  _recolorSocketCubies(size){
+    for (var y = 0; y < 3; y++) {
+      for (var z = 0; z < 3; z++) {
+        for (var x = 0; x < 3; x++) {
+          var i = CUBES.Cube333.pieceSocketMap[y][z][x];
+          if(i == 'c' || i == null) continue;
+           var cubie = this.sockets[i].cubie;
+           cubie.clearColors();
+           var piece = this.sockets[i].piece;
+           var cols = {};
+           switch(y){
+             case 2: //Top Layer
+               cols.U = piece.colors[piece.orientation];
+               if (piece instanceof CUBES.Edge){
+                var otherIndx = (piece.orientation + 1)%piece.orientationCount;
+                 if(z == 0) cols.B = piece.colors[otherIndx];
+                 if(z == 2) cols.F = piece.colors[otherIndx];
+                 if(x == 0) cols.L = piece.colors[otherIndx];
+                 if(x == 2) cols.R = piece.colors[otherIndx];
+               }
+               else{ //corners
+                 var CWIndx  = piece.orientationRotatePeek();
+                 var CCWIndx = piece.orientationRotatePeek(true);
+                 if(z == x) {
+                   cols.F = cols.B = piece.colors[CCWIndx];
+                   cols.R = cols.L = piece.colors[CWIndx];
+                 }
+                 else{
+                   cols.F = cols.B = piece.colors[CWIndx];
+                   cols.R = cols.L = piece.colors[CCWIndx];
+                 }
+               }
+               break;
+             case 1: //Middle, all ar edges
+                var otherIndx = (piece.orientation + 1)%piece.orientationCount;
+                if(z == 2){
+                  cols.F = piece.colors[piece.orientation];
+                }
+                else{
+                  cols.B = piece.colors[piece.orientation];
+                }
+                if(x == 0) cols.L = piece.colors[otherIndx];
+                if(x == 2) cols.R = piece.colors[otherIndx];
+               break;
+             case 0: //Bottom
+               cols.D = piece.colors[piece.orientation];
+               if (piece instanceof CUBES.Edge){
+                var otherIndx = (piece.orientation + 1)%piece.orientationCount;
+                 if(z == 0) cols.B = piece.colors[otherIndx];
+                 if(z == 2) cols.F = piece.colors[otherIndx];
+                 if(x == 0) cols.L = piece.colors[otherIndx];
+                 if(x == 2) cols.R = piece.colors[otherIndx];
+               }
+               else{ //corners
+                 var CWIndx  = piece.orientationRotatePeek();
+                 var CCWIndx = piece.orientationRotatePeek(true);
+                 if(z != x) {
+                   cols.F = cols.B = piece.colors[CCWIndx];
+                   cols.R = cols.L = piece.colors[CWIndx];
+                 }
+                 else{
+                   cols.F = cols.B = piece.colors[CWIndx];
+                   cols.R = cols.L = piece.colors[CCWIndx];
+                 }
+               }
+               break;
+           }
+           cubie.setColors(cols);
+        }
+      }
+    }
+  }
 };
+
+//static vars
+CUBES.Cube333.pieceSocketMap = [];
+// Top layer     Middle layer      Bottom Layer
+// [0][1][2]     [ 8][ c][ 9]     [12][13][14]
+// [7][c][3]     [ c][  ][ c]     [19][ c][15]
+// [6][5][4]     [11][ c][10]     [18][17][16]
+CUBES.Cube333.pieceSocketMap[2] = [[0,1,2],
+                     [7,'c',3],
+                     [6,5,4]];
+CUBES.Cube333.pieceSocketMap[1] = [[ 8,'c', 9],
+                    ['c', null,'c'],
+                    [11,'c',10]];
+CUBES.Cube333.pieceSocketMap[0] = [[12,13,14],
+                    [19,'c',15],
+                    [18,17,16]];

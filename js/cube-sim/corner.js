@@ -14,4 +14,15 @@ CUBES.Corner = class Corner extends CUBES.Piece {
       this.orientation = (this.orientation + 1)%3;
     }
   }
+  orientationRotatePeek(CCW){
+    var orientation = this.orientation;
+    if(CCW){
+      orientation = orientation - 1;
+      orientation = orientation == -1? 2 : orientation;
+    }
+    else{
+      orientation = (orientation + 1)%3;
+    }
+    return orientation;
+  }
 };

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>My first Three.js app</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+      button {width: 80px}
+      .UI {position: fixed}
+      .green{background: green}
+      .red{background: red}
+      .blue{background: blue}
+      .orange{background: orange}
+      .white{background: white}
+      .yellow{background: yellow}
+
+		</style>
+	</head>
+	<body>
+    <div class ="UI">
+      <button type="button" class='red'
+        onclick="rubik.rotate('F');rubik._recolorSocketCubies()">CW</button>
+      <button type="button" class='red'
+        onclick="rubik.rotate('F*');rubik._recolorSocketCubies()">CCW</button>
+      <button type="button" class='orange'
+        onclick="rubik.rotate('B');rubik._recolorSocketCubies()">CW</button>
+      <button type="button" class='orange'
+        onclick="rubik.rotate('B*');rubik._recolorSocketCubies()">CCW</button>
+      <button type="button" class='blue'
+        onclick="rubik.rotate('R');rubik._recolorSocketCubies()">CW</button>
+      <button type="button" class='blue'
+        onclick="rubik.rotate('R*');rubik._recolorSocketCubies()">CCW</button>
+      <button type="button" class='green'
+        onclick="rubik.rotate('L');rubik._recolorSocketCubies()">CW</button>
+      <button type="button" class='green'
+        onclick="rubik.rotate('L*');rubik._recolorSocketCubies()">CCW</button>
+      <button type="button" class='white'
+        onclick="rubik.rotate('U');rubik._recolorSocketCubies()">CW</button>
+      <button type="button" class='white'
+        onclick="rubik.rotate('U*');rubik._recolorSocketCubies()">CCW</button>
+      <button type="button" class='yellow'
+        onclick="rubik.rotate('D');rubik._recolorSocketCubies()">CW</button>
+      <button type="button" class='yellow'
+        onclick="rubik.rotate('D*');rubik._recolorSocketCubies()">CCW</button>
+      <button type="button"
+        onclick="rubik.rotate('D*');rubik._recolorSocketCubies()">Scramble</button>
+      <button type="button"
+        onclick="rubik.rotate('D*');rubik._recolorSocketCubies()">Restore</button>
+    </div>
+		<script src="js/three.js"></script>
+    <script src="js/OrbitControls.js"></script>
+    <script src="js/cube-sim/init.js"></script>
+    <script src="js/cube-sim/piece.js"></script>
+    <script src="js/cube-sim/socket.js"></script>
+    <script src="js/cube-sim/center.js"></script>
+    <script src="js/cube-sim/corner.js"></script>
+    <script src="js/cube-sim/edge.js"></script>
+    <script src="js/cube-sim/coloredCube.js"></script>
+    <script src="js/cube-sim/cube333.js"></script>
+		<script>
+      //scene setup
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+      var renderer = new THREE.WebGLRenderer();
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      document.body.appendChild( renderer.domElement );
+
+      // Controls
+	     controls = new THREE.OrbitControls( camera, renderer.domElement );
+      //add light
+      var directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
+      directionalLight.position.set( 2, 1, 2 );
+      scene.add( directionalLight );
+      var directionalLight2 = new THREE.DirectionalLight( 0xffffff, 1 );
+      directionalLight2.position.set( -3, -1, 2 );
+      scene.add( directionalLight2 );
+
+      var directionalLight = new THREE.DirectionalLight( 0xffffff, .5 );
+      directionalLight.position.set( 2, 1, -2 );
+      scene.add( directionalLight );
+      var directionalLight2 = new THREE.DirectionalLight( 0xffffff, .5 );
+      directionalLight2.position.set( -3, -1, -2 );
+      scene.add( directionalLight2 );
+
+      camera.position.z = 5;
+      //Draw cube
+      var rubik = new CUBES.Cube333();
+      rubik.initRenderer();
+      scene.add(rubik.object3D);
+      rubik._recolorSocketCubies()
+      //Drawing loop
+      function render() {
+      	requestAnimationFrame( render );
+        renderer.render( scene, camera );
+      }
+      render();
+      //Button controls for now
+		</script>
+	</body>
+</html>
