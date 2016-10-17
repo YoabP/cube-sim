@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset=utf-8>
-		<title>My first Three.js app</title>
-		<style>
-			body { margin: 0; }
-			canvas { width: 100%; height: 100% }
+  <head>
+    <meta charset=utf-8>
+    <title>Cube Simulator</title>
+    <style>
+      body { margin: 0; }
+      canvas { width: 100%; height: 100% }
       button {width: 80px}
       .UI {position: fixed}
       .green{background: green}
@@ -15,9 +15,9 @@
       .white{background: white}
       .yellow{background: yellow}
 
-		</style>
-	</head>
-	<body>
+    </style>
+  </head>
+  <body>
     <div class ="UI">
       <button type="button" class='red'
         onclick="rubik.rotate('F');rubik.updateRenderer()">CW</button>
@@ -48,8 +48,8 @@
       <button type="button"
         onclick="restore()">Restore</button>
     </div>
-		<script src="js/three.js"></script>
-    <script src="js/OrbitControls.js"></script>
+    <script src="js/three.js"></script>
+    <script src="js/TrackballControls.js"></script>
     <script src="js/cube-sim/init.js"></script>
     <script src="js/cube-sim/piece.js"></script>
     <script src="js/cube-sim/socket.js"></script>
@@ -58,7 +58,7 @@
     <script src="js/cube-sim/edge.js"></script>
     <script src="js/cube-sim/coloredCube.js"></script>
     <script src="js/cube-sim/cube333.js"></script>
-		<script>
+    <script>
       //scene setup
       var scene = new THREE.Scene();
       var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -68,7 +68,14 @@
       document.body.appendChild( renderer.domElement );
 
       // Controls
-	     controls = new THREE.OrbitControls( camera, renderer.domElement );
+      controls = new THREE.TrackballControls( camera );
+      controls.rotateSpeed = 2.5;
+      controls.noZoom = true;
+      controls.noPan = true;
+      controls.staticMoving = true;
+      controls.dynamicDampingFactor = 0.3;
+      controls.keys = [ 65, 83, 68 ];
+
       //add light
       var directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
       directionalLight.position.set( 2, 1, 2 );
@@ -90,12 +97,20 @@
       rubik.initRenderer();
       scene.add(rubik.object3D);
       rubik.updateRenderer()
+
       //Drawing loop
+
+      animate();
+
+      function animate() {
+        requestAnimationFrame( animate );
+        renderer.render( scene, camera );
+        controls.update();
+      }
+
       function render() {
-      	requestAnimationFrame( render );
         renderer.render( scene, camera );
       }
-      render();
       //Button controls for now
       function restore(){
         scene.remove(rubik.object3D);
@@ -116,6 +131,6 @@
         max = Math.floor(max);
         return Math.floor(Math.random() * (max - min + 1)) + min;
       }
-		</script>
-	</body>
+    </script>
+  </body>
 </html>
