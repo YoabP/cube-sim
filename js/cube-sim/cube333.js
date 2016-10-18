@@ -141,6 +141,26 @@ CUBES.Cube333 = class Cube333 {
     });
   }
 
+  isSolved(){
+    var solved = true;
+    for (var center in this.centers) {
+      if (this.centers.hasOwnProperty(center)) {
+          var c = this.centers[center];
+          var color = c.cubie[center].material.color;
+          //console.log(center, color);
+          c.sockets[0].forEach(function(socket, index){
+            var c2 = socket.cubie[center].material.color;
+            //console.log(c2)
+            if(color.r != c2.r ||
+              color.g != c2.g ||
+              color.b != c2.b){
+              solved = false;
+            }
+          });
+      }
+    }
+    return solved;
+  }
   //Rotate a slice in the cube, will rotate pieces and adjust orientations.
   // A move with a * indicates it is counter ClockWise
   // Notes on orientation:
