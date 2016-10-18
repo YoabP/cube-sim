@@ -1,9 +1,6 @@
 //represents a center piece. They act as rotation axises
 "use strict";
 CUBES.Center = class Center {
-  //TODO: Arrange sockets as an array of loops
-  // TODO: Add Depth to centers. To allow for inner slices.
-  // This will mean a matrix will represent centers.
   constructor(args) {
     args = args? args : {};
     this.sockets  = args.sockets? args.sockets : [];

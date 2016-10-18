@@ -140,17 +140,17 @@ CUBES.Cube333 = class Cube333 {
       colors:[CUBES.Colors.Y,CUBES.Colors.G]
     });
   }
-
+  //TODO: Use logical model instead of object dependant.
+  // Iterate over pieces, check correct color (so position)
+  // And orientation.
   isSolved(){
     var solved = true;
     for (var center in this.centers) {
       if (this.centers.hasOwnProperty(center)) {
           var c = this.centers[center];
           var color = c.cubie[center].material.color;
-          //console.log(center, color);
           c.sockets[0].forEach(function(socket, index){
             var c2 = socket.cubie[center].material.color;
-            //console.log(c2)
             if(color.r != c2.r ||
               color.g != c2.g ||
               color.b != c2.b){
