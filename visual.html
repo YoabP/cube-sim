@@ -44,13 +44,14 @@
 		<script src="js/cube-sim/edge.js"></script>
 		<script src="js/cube-sim/coloredCube.js"></script>
 		<script src="js/cube-sim/cube333.js"></script>
+		<script src="js/cube-sim/cube333Visual.js"></script>
 
 		<script>
 
 			var container, stats;
 
 			var camera, scene, renderer;
-      var rubik;
+      var rubik, rubikView;
 			var mouseX = 0, mouseY = 0;
 
 			var windowHalfX = window.innerWidth / 2;
@@ -83,14 +84,10 @@
 				scene.add(camera);
 				// model
 				rubik = new CUBES.Cube333();
-				rubik.initRenderer();
-				//scene.add(rubik.object3D);
+				rubik.initRenderer(); //legacy renderer. for debugging.
 
-				loadModel().then(function(model){
-					bind(model,rubik);
-					scene.add(model);
-				});
-
+				//visualization. Adds model to scene, uses logical model rubik.
+				rubikView = new CUBES.Cube333.View(rubik,scene);
 				//
 
 				renderer = new THREE.WebGLRenderer();
@@ -115,85 +112,6 @@
 				window.addEventListener( 'resize', onWindowResize, false );
 
 			}
-			function algorithm(algorithm,ms){
-				//patch to format
-				algorithm = algorithm.replace(/'/g, '*');
-				algorithm = algorithm.replace(/(\w)2/g, '$1 $1');
-				var moves = algorithm.split(' ');
-				_algorithmR(moves,ms);
-			}
-			function _algorithmR(moves,ms){
-				ms = ms? ms: 300;
-				if(moves.length == 0) return;
-				var move = moves.shift();
-				rotate(move,ms).then(
-					function(){
-						_algorithmR(moves,ms);
-					});
-			}
-			function rotate(move, ms){
-				var face, CCW;
-				ms = ms? ms: 300;
-				face = move[0];
-				CCW = move[1];
-				if(!canRotate) return;
-				return new Promise(function(resolve, reject){
-					var center = rubik.getSocket(face);
-					var obj = center.piece.cubie;
-					obj.updateMatrixWorld();
-					//THREE.SceneUtils.attach( center.piece.cubie, center.piece.cubie.parent, obj );
-					center.sockets[0].forEach(function(socket, index){
-						// remove child from scene and add it to parent
-						THREE.SceneUtils.attach( socket.piece.cubie, socket.piece.cubie.parent, obj );
-					});
-
-					var rotation,target;
-					var axis;
-					var direction; //clockwise direction
-					switch(face){
-						case 'U': case 'D':
-							axis='y';
-							break;
-						case 'F': case 'B':
-							axis = 'z';
-							break;
-						case 'R': case 'L':
-							axis = 'x';
-							break;
-					}
-					switch(face){
-						case 'U': case 'R' : case 'F':
-							direction = -1;
-						break;
-						case 'D': case 'L' : case 'B':
-							direction = 1;
-						break;
-					}
-					rotation = { y : obj.rotation[axis] };
-					target = { y: obj.rotation[axis] + Math.toRadians(90)*(CCW? -direction:direction)};
-
-					var tween = new TWEEN.Tween(rotation).to(target, ms);
-					tween.onUpdate(function(){
-					    obj.rotation[axis] = rotation.y;
-					});
-
-					canRotate = false;
-					tween.onComplete(function(){
-						var center = rubik.getSocket(face);
-						var obj = center.piece.cubie;
-						obj.updateMatrixWorld();
-						center.sockets[0].forEach(function(socket, index){
-							// remove child from parent and add it to scene
-							THREE.SceneUtils.detach( socket.piece.cubie, obj, scene );
-						});
-						rubik.rotate(move);
-					  canRotate = true;
-						resolve();
-					});
-					tween.start();
-				});
-			}
-
 			function onWindowResize() {
 
 				windowHalfX = window.innerWidth / 2;
@@ -227,37 +145,6 @@
 				renderer.render( scene, camera );
 
 			}
-			function bind(model, rubik){
-				model.children.forEach(function(elem, index){
-					rubik.getSocket(elem.name).piece.cubie = elem;
-				});
-			}
-      function loadModel(){
-        var onProgress = function ( xhr ) {
-          if ( xhr.lengthComputable ) {
-            var percentComplete = xhr.loaded / xhr.total * 100;
-            console.log( Math.round(percentComplete, 2) + '% downloaded' );
-          }
-        };
-        var onError = function ( xhr ) { };
-        THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader() );
-        var mtlLoader = new THREE.MTLLoader();
-        mtlLoader.setPath( 'models/333/' );
-				return new Promise(function(resolve, reject) {
-		      mtlLoader.load( '333.mtl', function( materials ) {
-
-		        materials.preload();
-
-		        var objLoader = new THREE.OBJLoader();
-		        objLoader.setMaterials( materials );
-		        objLoader.setPath( 'models/333/' );
-		        objLoader.load( '333.obj', function ( object ) {
-		          resolve(object);
-		        }, onProgress, onError );
-
-		      });
-				});
-      }
 		</script>
 
 	</body>
