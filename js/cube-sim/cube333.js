@@ -350,9 +350,35 @@ CUBES.Cube333 = class Cube333 {
       }
     }
   }
+  getSocket(name){
+    var faces = name.split('');
+    var x,y,z;
+    x = y = z = 1;
+
+    if (faces.indexOf('U')!= -1) y = 2;
+    else if (faces.indexOf('D')!= -1) y = 0;
+
+    if (faces.indexOf('F')!= -1) z = 2;
+    else if (faces.indexOf('B')!= -1) z = 0;
+
+    if (faces.indexOf('R')!= -1) x = 2;
+    else if (faces.indexOf('L')!= -1) x = 0;
+
+    switch(faces.length){
+      case 1: //Center. Return whole center Object
+        return this.centers[faces[0]];
+        break;
+      case 2://Edge
+      case 3://Corner
+        var i = CUBES.Cube333.pieceSocketMap[y][z][x];
+        return this.sockets[i];
+        break;
+    }
+  }
 };
 
 //static vars
+// Maps socket 3D [y][z][x] space to socket index.
 CUBES.Cube333.pieceSocketMap = [];
 // Top layer     Middle layer      Bottom Layer
 // [0][1][2]     [ 8][ c][ 9]     [12][13][14]

@@ -9,3 +9,9 @@ CUBES.Colors = {
   Y: 0xffff00,
   Bk: 0x333333
 };
+Math.toDegrees = function toDegrees (angle) {
+  return angle * (180 / Math.PI);
+}
+Math.toRadians = function toRadians (angle) {
+  return angle * (Math.PI / 180);
+}
