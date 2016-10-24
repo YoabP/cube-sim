@@ -115,8 +115,25 @@
 				window.addEventListener( 'resize', onWindowResize, false );
 
 			}
-			function rotate(rotation){
+			function algorithm(algorithm,ms){
+				//patch to format
+				algorithm = algorithm.replace(/'/g, '*');
+				algorithm = algorithm.replace(/(\w)2/g, '$1 $1');
+				var moves = algorithm.split(' ');
+				_algorithmR(moves,ms);
+			}
+			function _algorithmR(moves, ms){
+				ms = ms? ms: 300;
+				if(moves.length == 0) return;
+				var move = moves.shift()
+				setTimeout(function(){
+					rotate(move,ms);
+					_algorithmR(moves,ms);
+				},ms+50);
+			}
+			function rotate(rotation, ms){
 				var face, CCW;
+				ms = ms? ms: 300;
 				face = rotation[0];
 				CCW = rotation[1];
 				if(!canRotate) return;
@@ -154,7 +171,7 @@
 				rotation = { y : obj.rotation[axis] };
 				target = { y: obj.rotation[axis] + Math.toRadians(90)*(CCW? -direction:direction)};
 
-				var tween = new TWEEN.Tween(rotation).to(target, 300);
+				var tween = new TWEEN.Tween(rotation).to(target, ms);
 				tween.onUpdate(function(){
 				    obj.rotation[axis] = rotation.y;
 				});
