@@ -131,11 +131,11 @@
 					_algorithmR(moves,ms);
 				},ms+50);
 			}
-			function rotate(rotation, ms){
+			function rotate(move, ms){
 				var face, CCW;
 				ms = ms? ms: 300;
-				face = rotation[0];
-				CCW = rotation[1];
+				face = move[0];
+				CCW = move[1];
 				if(!canRotate) return;
 				var center = rubik.getSocket(face);
 				var obj = center.piece.cubie;
@@ -185,7 +185,7 @@
 						// remove child from parent and add it to scene
 						THREE.SceneUtils.detach( socket.piece.cubie, obj, scene );
 					});
-					rubik.rotate(face + (CCW?'*':''));
+					rubik.rotate(move);
 				  canRotate = true;
 				});
 				tween.start();
