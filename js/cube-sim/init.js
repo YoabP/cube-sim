@@ -15,3 +15,8 @@ Math.toDegrees = function toDegrees (angle) {
 Math.toRadians = function toRadians (angle) {
   return angle * (Math.PI / 180);
 }
+Math.getRandomIntInclusive = function getRandomIntInclusive(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}

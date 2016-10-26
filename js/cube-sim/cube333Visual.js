@@ -5,10 +5,11 @@
 CUBES.Cube333.View = class View {
   constructor(rubik,scene) {
     this.logic = rubik;
-    this.scene = scene;
     this.canRotate = true;
+    var self = this;
     this.loadModel().then(function(model){
       CUBES.Cube333.View.bind(model,rubik);
+      self.object3D = model;
       scene.add(model);
     });
   }
@@ -84,7 +85,7 @@ CUBES.Cube333.View = class View {
         obj.updateMatrixWorld();
         center.sockets[0].forEach(function(socket, index){
           // remove child from parent and add it to scene
-          THREE.SceneUtils.detach( socket.piece.cubie, obj, self.scene );
+          THREE.SceneUtils.detach( socket.piece.cubie, obj, self.object3D );
         });
         self.logic.rotate(move);
         self.canRotate = true;
