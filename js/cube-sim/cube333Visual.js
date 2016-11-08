@@ -94,7 +94,7 @@ CUBES.Cube333.View = class View {
       tween.start();
     });
   }
-
+  
   //Loads the 3D model. Must be called before using view.
   loadModel(){
     var onProgress = function ( xhr ) {

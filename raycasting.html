@@ -48,6 +48,7 @@
       <button type="button"
         onclick="restore()">Restore</button>
     </div>
+    <div id="container">
     <script src="js/three.js"></script>
     <script src="js/Tween.min.js"></script>
     <script src="js/TrackballControls.js"></script>
@@ -65,6 +66,10 @@
     <script src="js/cube-sim/cube333Visual.js"></script>
 
     <script>
+    var raycaster = new THREE.Raycaster();
+    var mouse = new THREE.Vector2();
+    var selection ={start:"", end:""};
+    var container = document.getElementById( 'container' );
       //scene setup
       var scene = new THREE.Scene();
       var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -72,11 +77,14 @@
       var renderer = new THREE.WebGLRenderer();
       renderer.setSize( window.innerWidth, window.innerHeight );
       renderer.setClearColor('#282c34');
-      document.body.appendChild( renderer.domElement );
-      window.addEventListener( 'resize', onWindowResize, false );
 
+      container.appendChild( renderer.domElement );
+      window.addEventListener( 'resize', onWindowResize, false );
+      window.addEventListener( 'mousemove', onMouseMove, false );
+      container.addEventListener( 'mousedown', onMouseDown, false);
+      container.addEventListener( 'mouseup'  , onMouseUp  , false);
       // Controls
-      controls = new THREE.TrackballControls( camera );
+      controls = new THREE.TrackballControls( camera);
       controls.rotateSpeed = 2.5;
       controls.noZoom = true;
       controls.noPan = true;
@@ -146,7 +154,41 @@
 				renderer.setSize( window.innerWidth, window.innerHeight );
 
 			}
-
+      function onMouseMove( event ) {
+      	// calculate mouse position in normalized device coordinates
+      	// (-1 to +1) for both components
+        mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+      	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+      }
+      var arrow;
+      function onMouseDown(event){
+        if (event.button!= 0) {return;}
+        scene.remove ( arrow );
+        arrow = new THREE.ArrowHelper( camera.getWorldDirection(), camera.getWorldPosition(), 100, Math.random() * 0xffffff );
+        scene.add( arrow );
+        console.log("DOWN");
+        // update the picking ray with the camera and mouse position
+        	raycaster.setFromCamera( mouse, camera );
+        	// calculate objects intersecting the picking ray
+        	var intersects = raycaster.intersectObjects( scene.children );
+          console.log(intersects);
+          for ( var i = 0; i < intersects.length; i++ ) {
+        		intersects[ i ].object.material.color.set( 0x000000 );
+        	}
+          //intersects[0].object.material.color.set(CUBES.Colors.Bk);
+      }
+      function onMouseUp(event){
+        if (event.button!= 0) {return;}
+        console.log("up");
+        // update the picking ray with the camera and mouse position
+        	raycaster.setFromCamera( mouse, camera );
+        	// calculate objects intersecting the picking ray
+        	var intersects = raycaster.intersectObjects( scene.children );
+        	for ( var i = 0; i < intersects.length; i++ ) {
+        		intersects[ i ].object.material.color.set( 0x000000 );
+        	}
+          //intersects[0].object.material.color.set(CUBES.Colors.G);
+      }
       function loadModel(){
         var materials = {
           U: new THREE.MeshPhongMaterial( {color: CUBES.Colors.W} ),
