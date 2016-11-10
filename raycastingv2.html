@@ -40,7 +40,7 @@
 			var raycaster = new THREE.Raycaster();
 			var mouse = new THREE.Vector2();
 			var moveLister = {start:"", end:""};
-			var rubik, rubikView;
+			var rubik, rubikView, hitboxModel;
 			init();
 			animate();
 
@@ -78,7 +78,6 @@
 				camera.add( light );
 				scene.add(camera);
 				var geometry = new THREE.BoxGeometry( 40, 40, 40 );
-				var hitboxModel;
 				loadModel().then(function(val){
 					hitboxModel = val;
 					scene.add(hitboxModel);
@@ -88,6 +87,7 @@
 				});
 				//Draw cube
 	      rubik = new CUBES.Cube333();
+				rubik.initRenderer();
 	      rubikView = new CUBES.Cube333.View(rubik,scene);
 
 
@@ -183,6 +183,7 @@
 
 				controls.update();
 				TWEEN.update();
+				rubik.updateRenderer();
 				renderer.render( scene, camera );
 
 			}
@@ -284,6 +285,25 @@
 				direction = resultingFace === start? '':'*';
 				console.log(sharedFace+direction);
 				return sharedFace+direction;
+			}
+
+			function seeHitbox(){
+				b = rubik.getSocket("R").piece.cubie;
+				w = rubik.getSocket("U").piece.cubie;
+				r = rubik.getSocket("F").piece.cubie;
+				g = rubik.getSocket("L").piece.cubie;
+				y = rubik.getSocket("F").piece.cubie;
+				o = rubik.getSocket("B").piece.cubie;
+				hitboxModel.children.forEach(function(child){child.material.opacity = .5})
+				hitboxModel.children.forEach(function(child){child.material.transparent = true})
+				hitboxModel.children.forEach(function(child){child.material.visible = true})
+				rubikView.root.add(hitboxModel);
+			}
+			function hideHitbox(){
+				hitboxModel.children.forEach(function(child){child.material.visible = false})
+			}
+			function seeRenderer(){
+				rubikView.root.add(rubik.object3D);
 			}
 		</script>
 

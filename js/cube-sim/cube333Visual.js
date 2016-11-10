@@ -10,7 +10,9 @@ CUBES.Cube333.View = class View {
     this.loadModel().then(function(model){
       CUBES.Cube333.View.bind(model,rubik);
       self.object3D = model;
-      scene.add(model);
+      self.root = new THREE.Object3D();
+      self.object3D.add(self.root);
+      scene.add(self.object3D);
     });
   }
   //Execute an algorithm.
@@ -40,10 +42,35 @@ CUBES.Cube333.View = class View {
     face = move[0];
     CCW = move[1];
     if(!self.canRotate) return;
+    if(face === 'U' || face === 'D'||
+       face === 'L' || face === 'R'||
+       face === 'F' || face === 'B'){
+      return new Promise(function(resolve,reject){
+        self.canRotate = false;
+        self._rotateFaces(face,CCW, ms).then(function(){
+          self.canRotate = true;
+          resolve();
+        });
+      });
+    }
+    else{
+      return new Promise(function(resolve,reject){
+        self.canRotate = false;
+        self._rotateSlices(face,CCW, ms).then(function(){
+          self.canRotate = true;
+          resolve();
+        });
+      });
+    }
+  }
+  //Rotation method for faces.
+  _rotateFaces(face, CCW, ms){
+    var self = this;
     return new Promise(function(resolve, reject){
       var center = self.logic.getSocket(face);
       var obj = center.piece.cubie;
       obj.updateMatrixWorld();
+      self.object3D.updateMatrixWorld();
       center.sockets[0].forEach(function(socket, index){
         // remove child from scene and add it to parent
         THREE.SceneUtils.attach( socket.piece.cubie, socket.piece.cubie.parent, obj );
@@ -53,13 +80,13 @@ CUBES.Cube333.View = class View {
       var direction; //clockwise direction
       switch(face){
         case 'U': case 'D':
-          axis='y';
+          axis='Y';
           break;
         case 'F': case 'B':
-          axis = 'z';
+          axis = 'Z';
           break;
         case 'R': case 'L':
-          axis = 'x';
+          axis = 'X';
           break;
       }
       switch(face){
@@ -70,31 +97,101 @@ CUBES.Cube333.View = class View {
           direction = 1;
         break;
       }
-      rotation = { y : obj.rotation[axis] };
-      target = { y: obj.rotation[axis] + Math.toRadians(90)*(CCW? -direction:direction)};
-
+      rotation = { ms: 0};
+      target = { ms:ms};
+      var totalRotation = Math.toRadians(90)*(CCW? -direction:direction);
+      var step = totalRotation/ms;
+      var prevMs = 0;
       var tween = new TWEEN.Tween(rotation).to(target, ms);
       tween.onUpdate(function(){
-          obj.rotation[axis] = rotation.y;
+          var delta = rotation.ms - prevMs;
+          prevMs = rotation.ms;
+          obj["rotate"+axis](delta*step);
       });
 
-      self.canRotate = false;
       tween.onComplete(function(){
         var center = self.logic.getSocket(face);
         var obj = center.piece.cubie;
         obj.updateMatrixWorld();
+        self.object3D.updateMatrixWorld();
         center.sockets[0].forEach(function(socket, index){
           // remove child from parent and add it to scene
           THREE.SceneUtils.detach( socket.piece.cubie, obj, self.object3D );
         });
-        self.logic.rotate(move);
-        self.canRotate = true;
+        self.logic.rotate(face+(CCW?'*':''));
         resolve();
       });
       tween.start();
     });
   }
-  
+  //Rotation method for "special" moves. Moves for middle layers.
+  // This moves require the movement of 2 faces, and whole cube rotation.
+  // M – Middle layer turn – in the same direction as an L turn between R and L.
+  // E – Equatorial layer – direction as a D turn between U and D.
+  // S – Standing layer – direction as an F turn between F and B.
+  _rotateSlices(slice, CCW, ms){
+    var self = this;
+    var rotation,target;
+    var axis, moveA, moveB;
+    var sliceSockets;
+    var direction; //clockwise direction
+    switch (slice) {
+      case 'M':
+        axis = 'X';
+        sliceSockets = self.logic.getSockets(["F","UF","U","UB","B","BD","D","DF"]);
+        direction = 1;
+        moveA = 'R' + (CCW?'*': '');
+        moveB = 'L' + (CCW? '':'*');
+        break;
+      case 'E':
+        axis = 'Y';
+        sliceSockets = self.logic.getSockets(["F","FR","R","RB","B","BL","L","LF"]);
+        direction = 1;
+        moveA = 'U' + (CCW?'*': '');
+        moveB = 'D' + (CCW? '':'*');
+        break;
+      case 'S':
+        axis = 'Z';
+        sliceSockets = self.logic.getSockets(["R","RU","U","UL","L","LD","D","DR"]);
+        direction = -1;
+        moveA = 'B' + (CCW?'*': '');
+        moveB = 'F' + (CCW? '':'*');
+        break;
+    }
+    //Rotation must be additive, not absolute
+    rotation = { ms: 0};
+    target = { ms: ms};
+    var totalRotation = Math.toRadians(90)*(CCW? -direction:direction);
+    var step = totalRotation/ms;
+    var prevMs = 0;
+    return new Promise(function(resolve,reject){
+        var obj = self.root;
+        obj.updateMatrixWorld();
+        self.object3D.updateMatrixWorld();
+        sliceSockets.forEach(function(socket, index){
+          THREE.SceneUtils.attach( socket.piece.cubie, socket.piece.cubie.parent, obj );
+        });
+        var tween = new TWEEN.Tween(rotation).to(target, ms);
+        tween.onUpdate(function(){
+            var delta = (rotation.ms - prevMs);
+            prevMs = rotation.ms;
+            self.root["rotate"+axis](delta*step );
+        });
+        tween.onComplete(function(){
+          var obj = self.root;
+          obj.updateMatrixWorld();
+          self.object3D.updateMatrixWorld();
+          sliceSockets.forEach(function(socket, index){
+            THREE.SceneUtils.detach( socket.piece.cubie, obj, self.object3D );
+          });
+          self.logic.rotate(moveA);
+          self.logic.rotate(moveB);
+          resolve();
+        });
+        tween.start();
+      });
+  }
+
   //Loads the 3D model. Must be called before using view.
   loadModel(){
     var onProgress = function ( xhr ) {

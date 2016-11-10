@@ -370,6 +370,14 @@ CUBES.Cube333 = class Cube333 {
       }
     }
   }
+  getSockets(names){
+    var sockets = [];
+    var self = this;
+    names.forEach(function(name){
+      sockets.push(self.getSocket(name));
+    });
+    return sockets;
+  }
   getSocket(name){
     var faces = name.split('');
     var x,y,z;
