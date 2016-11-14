@@ -6,13 +6,16 @@ CUBES.Cube333.View = class View {
   constructor(rubik,scene) {
     this.logic = rubik;
     this.canRotate = true;
+    this.root = new THREE.Object3D();
     var self = this;
-    this.loadModel().then(function(model){
-      CUBES.Cube333.View.bind(model,rubik);
-      self.object3D = model;
-      self.root = new THREE.Object3D();
-      self.object3D.add(self.root);
-      scene.add(self.object3D);
+    this.loaded = new Promise(function(resolve, reject){
+      self.loadModel().then(function(model){
+        CUBES.Cube333.View.bind(model,rubik);
+        self.object3D = model;
+        self.object3D.add(self.root);
+        scene.add(self.object3D);
+        resolve(true);
+      });
     });
   }
   //Execute an algorithm.

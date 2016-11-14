@@ -28,19 +28,16 @@
     <script src="js/cube-sim/corner.js"></script>
     <script src="js/cube-sim/edge.js"></script>
     <script src="js/cube-sim/coloredCube.js"></script>
-    <script src="js/cube-sim/cube333.js"></script>
-    <script src="js/cube-sim/cube333Visual.js"></script>
+    <script src="js/cube-sim/333/cube333.js"></script>
+		<script src="js/cube-sim/333/cube333Visual.js"></script>
+    <script src="js/cube-sim/333/cube333Controller.js"></script>
 
 
 		<script>
 
 			var container;
 			var camera, controls, scene, renderer;
-			var rayCastObjects = [];
-			var raycaster = new THREE.Raycaster();
-			var mouse = new THREE.Vector2();
-			var moveLister = {start:"", end:""};
-			var rubik, rubikView, hitboxModel;
+			var rubik, rubikView, rubikController;
 			init();
 			animate();
 
@@ -77,22 +74,22 @@
 
 				camera.add( light );
 				scene.add(camera);
-				var geometry = new THREE.BoxGeometry( 40, 40, 40 );
-				loadModel().then(function(val){
-					hitboxModel = val;
-					scene.add(hitboxModel);
-					hitboxModel.children.forEach(function(child, index){
-						rayCastObjects.push(child);
-					});
-				});
+
 				//Draw cube
 	      rubik = new CUBES.Cube333();
 				rubik.initRenderer();
 	      rubikView = new CUBES.Cube333.View(rubik,scene);
-
+				rubikView.loaded.then(function(){//(camera, controls, scene, view)
+					rubikController = new CUBES.Cube333.Controller(camera, controls, rubikView);
+					rubikController.loaded.then(function(){
+						renderer.domElement.addEventListener( 'mousemove', function(event){rubikController.onDocumentMouseMove(event);}, false );
+						renderer.domElement.addEventListener( 'mousedown', function(event){rubikController.onDocumentMouseDown(event);}, false );
+						renderer.domElement.addEventListener( 'mouseup', function(event){rubikController.onDocumentMouseUp(event);}, false );
+					});
+				})
 
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
-				renderer.setClearColor( 0xf0f0f0 );
+				renderer.setClearColor('#282c34');
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				renderer.sortObjects = false;
@@ -111,9 +108,6 @@
 				container.appendChild( info );
 
 
-				renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
-				renderer.domElement.addEventListener( 'mousedown', onDocumentMouseDown, false );
-				renderer.domElement.addEventListener( 'mouseup', onDocumentMouseUp, false );
 
 				//
 
@@ -130,241 +124,18 @@
 
 			}
 
-			function onDocumentMouseMove( event ) {
-
-				event.preventDefault();
-
-				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-			}
-
-			function onDocumentMouseDown( event ) {
-
-				event.preventDefault();
-
-				var sel = getObjectOnMouse(mouse, camera, rayCastObjects);
-				if (sel){
-					controls.enabled = false;
-					moveLister.start = sel.name;
-				}
-				else {
-					moveLister = {};
-				}
-
-			}
-
-			function onDocumentMouseUp( event ) {
-
-				event.preventDefault();
-
-				controls.enabled = true;
-
-				var sel = getObjectOnMouse(mouse, camera, rayCastObjects);
-				if (sel && moveLister.start){
-					moveLister.end = sel.name;
-					var move = calculateMove(moveLister);
-					if (move){
-						rubikView.rotate(move);
-					}
-				}
-				moveLister = {};
-			}
-
 			//
 
 			function animate() {
-
 				requestAnimationFrame( animate );
-
 				render();
 			}
 
 			function render() {
-
 				controls.update();
 				TWEEN.update();
 				rubik.updateRenderer();
 				renderer.render( scene, camera );
-
-			}
-			function loadModel(){
-				var materials = {
-					U: new THREE.MeshPhongMaterial( {color: CUBES.Colors.W} ),
-					D: new THREE.MeshPhongMaterial( {color: CUBES.Colors.Y} ),
-					F: new THREE.MeshPhongMaterial( {color: CUBES.Colors.R} ),
-					B: new THREE.MeshPhongMaterial( {color: CUBES.Colors.O} ),
-					R: new THREE.MeshPhongMaterial( {color: CUBES.Colors.B} ),
-					L: new THREE.MeshPhongMaterial( {color: CUBES.Colors.G} )
-				};
-				var onProgress = function ( xhr ) {
-					if ( xhr.lengthComputable ) {
-						var percentComplete = xhr.loaded / xhr.total * 100;
-						console.log( Math.round(percentComplete, 2) + '% downloaded' );
-					}
-				};
-				var onError = function ( xhr ) { };
-				return new Promise(function(resolve, reject) {
-						var objLoader = new THREE.OBJLoader();
-						objLoader.setPath( 'models/333/' );
-						objLoader.load( '333_hitbox.obj', function ( object ) {
-							object.children.forEach(function(child, index){
-								var face = child.name[0];
-								child.material = materials[face];
-								child.material.visible = false;
-							});
-							resolve(object);
-						}, onProgress, onError );
-					});
-			}
-			function getObjectOnMouse(mouse, camera, rayCastObjects){
-				raycaster.setFromCamera( mouse, camera );
-				var intersects = raycaster.intersectObjects( rayCastObjects );
-				if ( intersects.length > 0 ) {
-					return intersects[ 0 ].object;
-				}
-				return null;
-			}
-
-			function calculateMove(move){
-				//Moves are only legal if they start and end on same face.
-				// Moves cannot start and end on the same piece.
-				// moves cannot start on a center and end on a corner. Vice versa.
-				if(move.start[0]!= move.end[0] || move.start === move.end ||
-					move.start.length === 1 && move.end.length === 3 ||
-					move.end.length === 1 && move.start.length === 3 ){
-						return
-				}
-				var selectedFace = move.start[0];
-				var sharedFace, direction;
-				var start, end;
-				//Moves are never done on the collided plane. So remove first plane,
-				// which is the actual plane the piece belongs to.
-				start = move.start.substring(1);
-				end = move.end.substring(1);
-				//Center slice moves. Centers have len = 1
-				// Moves along two edge pieces, len = 2, are also center moves.
-				//// M – Middle layer turn – direction as an L turn between R and L.
-				  // E – Equatorial layer – direction as a D turn between U and D.
-				  // S – Standing layer – direction as an F turn between F and B.
-				if (move.start.length <2 || move.end.length <2 ||
-				move.start.length === 2 && move.end.length === 2){
-						var slice = "MES";
-						switch(selectedFace){
-							case "U": case "D":
-								slice = slice.replace(/E/,'');
-								break;
-							case "R": case "L":
-								slice = slice.replace(/M/,'');
-								break;
-							case "F": case "B":
-								slice = slice.replace(/S/,'');
-								break;
-						}
-						if (start.length === 0 || end.length === 0){
-							var completion = completeMissingStartEnd(start,end);
-							start = start? start: completion.start;
-							end   = end? end: completion.end;
-						}
-						switch (start){
-							case "U": case "D":
-								slice = slice.replace(/E/,'');
-								break;
-							case "R": case "L":
-								slice = slice.replace(/M/,'');
-								break;
-							case "F": case "B":
-								slice = slice.replace(/S/,'');
-								break;
-						}
-						//Active, start = CCW?
-						//// M – Middle layer turn – direction as an L turn between R and L.
-							// E – Equatorial layer – direction as a D turn between U and D.
-							// S – Standing layer – direction as an F turn between F and B.
-						var directionHash = {
-							F:{D: true, R: true},
-							B:{U: true, L: true},
-							U:{F: true, R: true},
-							D:{L: true, B: true},
-							R:{D: true, B: true},
-							L:{U: true, F: true},
-						};
-
-						direction = directionHash[selectedFace][start]?'*':'';
-						console.log(start,end,slice);
-						return slice+direction;
-				};
-				//get face they share.
-				for (var i = 0; i < start.length; i++) {
-					for (var j = 0; j < end.length; j++) {
-						if( start[i] === end[j]){
-							sharedFace = start[i];
-							break;
-						}
-					}
-				}
-				if(!sharedFace) {return}
-				//Remove active move face from start end.
-				var regex = new RegExp(sharedFace, "g");
-				start = start.replace(regex, '');
-				end = end.replace(regex, '');
-				//Check for start-end completion, moves using edge pieces will
-				// have an empty string on either one.
-				if (start.length === 0 || end.length === 0){
-					var completion = completeMissingStartEnd(start,end);
-					start = start? start: completion.start;
-					end   = end? end: completion.end;
-				}
-				//calculate direction. '*' indicates counter clockwise
-				// Direction has to go on the vector perpendicular to both
-				// the selectedFace vector, and the face that is spinning.
-				// If the cross of this vectors is:
-				// Same as start, then direction is CW
-				// Same as   end, then direction is CWW
-				console.log(selectedFace, sharedFace, start, end);
-				var a = CUBES.Vectors[sharedFace];
-				var b = CUBES.Vectors[selectedFace];
-				var c = new THREE.Vector3();
-				c.crossVectors(a,b);
-				var resultingFace = CUBES.vectorToFace(c);
-				direction = resultingFace === start? '':'*';
-				console.log(sharedFace+direction);
-				return sharedFace+direction;
-			}
-			function isComplementary(face){
-				return face=="B"||face=="L"||face=="D"
-			}
-			function completeMissingStartEnd(start, end){
-				var existingSide = start? start: end;
-				var complementingSide;
-				switch (existingSide) {
-					case 'R': complementingSide = 'L'; break;
-					case 'L': complementingSide = 'R'; break;
-					case 'U': complementingSide = 'D'; break;
-					case 'D': complementingSide = 'U'; break;
-					case 'F': complementingSide = 'B'; break;
-					case 'B': complementingSide = 'F'; break;
-				}
-				start = start? start: complementingSide;
-				end   = end? end: complementingSide;
-				return {start:start, end:end};
-			}
-			function seeHitbox(){
-				b = rubik.getSocket("R").piece.cubie;
-				w = rubik.getSocket("U").piece.cubie;
-				r = rubik.getSocket("F").piece.cubie;
-				g = rubik.getSocket("L").piece.cubie;
-				y = rubik.getSocket("F").piece.cubie;
-				o = rubik.getSocket("B").piece.cubie;
-				hitboxModel.children.forEach(function(child){child.material.opacity = .5})
-				hitboxModel.children.forEach(function(child){child.material.transparent = true})
-				hitboxModel.children.forEach(function(child){child.material.visible = true})
-				rubikView.root.add(hitboxModel);
-			}
-			function hideHitbox(){
-				hitboxModel.children.forEach(function(child){child.material.visible = false})
-			}
-			function seeRenderer(){
-				rubikView.root.add(rubik.object3D);
 			}
 		</script>
 
