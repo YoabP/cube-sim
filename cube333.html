@@ -5,7 +5,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <link rel="stylesheet" type="text/css" href="CSS/cubeSim.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="CSS/sweetalert.css">
+		<link rel="stylesheet" type="text/css" href="node_modules/sweetalert2/dist/sweetalert2.min.css">
 		<style>
 			body {
 				font-family: Monospace;
@@ -17,15 +17,17 @@
 	</head>
 	<body>
 
-		<script src="js/three.js"></script>
-    <script src="js/Tween.min.js"></script>
-    <script src="js/easytimer.min.js"></script>
-    <script src="js/sweetalert.min.js"></script>
-    <script src="js/TrackballControls.js"></script>
-    <script src="js/loaders/DDSLoader.js"></script>
-		<script src="js/loaders/MTLLoader.js"></script>
-		<script src="js/loaders/OBJLoader.js"></script>
-    <script src="js/cube-sim/init.js"></script>
+		<script src="node_modules/es6-promise/es6-promise.auto.min.js"></script> <!-- for IE support -->
+		<script src="node_modules/sweetalert2/dist/sweetalert2.min.js"></script>
+		<script src="node_modules/easytimer/dist/easytimer.min.js"></script>
+		<script src="node_modules/three/build/three.min.js"></script>
+		<script src="node_modules/three/examples/js/controls/TrackballControls.js"></script>
+    <script src="node_modules/three/examples/js/loaders/DDSLoader.js"></script>
+		<script src="node_modules/three/examples/js/loaders/MTLLoader.js"></script>
+		<script src="node_modules/three/examples/js/loaders/OBJLoader.js"></script>
+		<script src="node_modules/tween.js/src/Tween.js"></script>
+
+		<script src="js/cube-sim/init.js"></script>
     <script src="js/cube-sim/piece.js"></script>
     <script src="js/cube-sim/socket.js"></script>
     <script src="js/cube-sim/center.js"></script>
@@ -104,15 +106,7 @@
 
 				container.appendChild( renderer.domElement );
 
-				/*var info = document.createElement( 'div' );
-				info.style.position = 'absolute';
-				info.style.top = '10px';
-				info.style.width = '100%';
-				info.style.textAlign = 'center';
-				info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> webgl - draggable cubes';
-				container.appendChild( info );
-        */
-        var menu = document.createElement( 'div' );
+				var menu = document.createElement( 'div' );
 				menu.style.position = 'absolute';
         menu.style.top = '10px';
 				menu.style.width = '100%';
@@ -198,6 +192,7 @@
       }
       function checkForSolve(){
         if(scrambled && rubik.isSolved()){
+					if(!timer.isRunning()) return;
           scrambled = false;
           var time = timer.getTimeValues().toString(['hours', 'minutes', 'seconds', 'secondTenths']);
           timer.stop();
