@@ -26,17 +26,22 @@ CUBES.Cube333.View = class View {
     algorithm = algorithm.replace(/'/g, '*');
     algorithm = algorithm.replace(/(\w)2/g, '$1 $1');
     var moves = algorithm.split(' ');
-    this._algorithmR(moves,ms);
+    return this._algorithmR(moves,ms);
   }
-  _algorithmR(moves,ms){
+  _algorithmR(moves,ms) {
     var self = this;
     ms = ms? ms: 300;
-    if(moves.length == 0) return;
-    var move = moves.shift();
-    self.rotate(move,ms).then(
-      function(){
-        self._algorithmR(moves,ms);
+    return new Promise(function (resolve) {
+      if(moves.length == 0) resolve(true);
+      var move = moves.shift();
+      self.rotate(move,ms).then(
+        function(){
+          resolve(false)
       });
+    })
+    .then(function (ended) {
+        return ended? ended:self._algorithmR(moves,ms);
+    });
   }
   rotate(move, ms){
     var self = this;
