@@ -1,0 +1,29 @@
+{
+  "name": "cube-sim",
+  "version": "1.0.0",
+  "description": "Twisty puzzle simulator.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YoabP/cube-sim.git"
+  },
+  "keywords": [
+    "cube",
+    "puzzle"
+  ],
+  "author": "Yoab Pizarro",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/YoabP/cube-sim/issues"
+  },
+  "homepage": "https://github.com/YoabP/cube-sim#readme",
+  "dependencies": {
+    "easytimer": "^1.1.1",
+    "sweetalert2": "^6.1.0",
+    "three": "^0.82.1",
+    "tween.js": "^16.3.5"
+  }
+}
