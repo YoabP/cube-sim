@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=utf-8>
+    <title>Cube Simulator</title>
+    <style>
+      body { margin: 0; }
+      canvas { width: 100%; height: 100% }
+      button {width: 80px}
+      .UI {position: fixed}
+      .green{background: green}
+      .red{background: red}
+      .blue{background: blue}
+      .orange{background: orange}
+      .white{background: white}
+      .yellow{background: yellow}
+
+    </style>
+  </head>
+  <body>
+    <div class ="UI">
+      <button type="button" class='red'
+        onclick="rubikView.rotate('F');">CW</button>
+      <button type="button" class='red'
+        onclick="rubikView.rotate('F*');">CCW</button>
+      <button type="button" class='orange'
+        onclick="rubikView.rotate('B');">CW</button>
+      <button type="button" class='orange'
+        onclick="rubikView.rotate('B*');">CCW</button>
+      <button type="button" class='blue'
+        onclick="rubikView.rotate('R');">CW</button>
+      <button type="button" class='blue'
+        onclick="rubikView.rotate('R*');">CCW</button>
+      <button type="button" class='green'
+        onclick="rubikView.rotate('L');">CW</button>
+      <button type="button" class='green'
+        onclick="rubikView.rotate('L*');">CCW</button>
+      <button type="button" class='white'
+        onclick="rubikView.rotate('U');">CW</button>
+      <button type="button" class='white'
+        onclick="rubikView.rotate('U*');">CCW</button>
+      <button type="button" class='yellow'
+        onclick="rubikView.rotate('D');">CW</button>
+      <button type="button" class='yellow'
+        onclick="rubikView.rotate('D*');">CCW</button>
+      <button type="button"
+        onclick="scramble()">Scramble</button>
+      <button type="button"
+        onclick="restore()">Restore</button>
+    </div>
+    <div id="container">
+    <script src="js/three.js"></script>
+    <script src="js/Tween.min.js"></script>
+    <script src="js/TrackballControls.js"></script>
+    <script src="js/loaders/DDSLoader.js"></script>
+		<script src="js/loaders/MTLLoader.js"></script>
+		<script src="js/loaders/OBJLoader.js"></script>
+    <script src="js/cube-sim/init.js"></script>
+    <script src="js/cube-sim/piece.js"></script>
+    <script src="js/cube-sim/socket.js"></script>
+    <script src="js/cube-sim/center.js"></script>
+    <script src="js/cube-sim/corner.js"></script>
+    <script src="js/cube-sim/edge.js"></script>
+    <script src="js/cube-sim/coloredCube.js"></script>
+    <script src="js/cube-sim/cube333.js"></script>
+    <script src="js/cube-sim/cube333Visual.js"></script>
+
+    <script>
+    var raycaster = new THREE.Raycaster();
+    var mouse = new THREE.Vector2();
+    var selection ={start:"", end:""};
+    var container = document.getElementById( 'container' );
+      //scene setup
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+      var renderer = new THREE.WebGLRenderer();
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      renderer.setClearColor('#282c34');
+
+      container.appendChild( renderer.domElement );
+      window.addEventListener( 'resize', onWindowResize, false );
+      window.addEventListener( 'mousemove', onMouseMove, false );
+      container.addEventListener( 'mousedown', onMouseDown, false);
+      container.addEventListener( 'mouseup'  , onMouseUp  , false);
+      // Controls
+      controls = new THREE.TrackballControls( camera);
+      controls.rotateSpeed = 2.5;
+      controls.noZoom = true;
+      controls.noPan = true;
+      controls.staticMoving = true;
+      controls.dynamicDampingFactor = 0.3;
+      controls.keys = [ 65, 83, 68 ];
+
+      //add light
+      var ambient = new THREE.AmbientLight( 0x444444 );
+      scene.add( ambient );
+
+      var light = new THREE.PointLight( 0xffeedd );
+      light.position.set( 0, 1, -1 ).normalize();
+      light.power = 25;
+      camera.add( light );
+      scene.add(camera);
+
+      camera.position.z = 5;
+      //Draw cube
+      //var rubik = new CUBES.Cube333();
+      //var rubikView = new CUBES.Cube333.View(rubik,scene);
+      var model;
+      loadModel().then(function(val){
+        model = val;
+        scene.add(model);
+      });
+      //Drawing loop
+
+      animate();
+
+      function animate() {
+        requestAnimationFrame( animate );
+        render();
+        controls.update();
+      }
+
+      function render() {
+        TWEEN.update();
+        renderer.render( scene, camera );
+      }
+      //Button controls for now
+      function restore(){
+        scene.remove(rubik.object3D);
+        scene.remove(rubikView.object3D);
+        rubik = new CUBES.Cube333();
+        rubikView = new CUBES.Cube333.View(rubik,scene);
+        rubik.initRenderer();
+      }
+      var moves =['U','D','L','R','F','B'];
+      function scramble(){
+        var algorithm = '';
+        for (var i = 0; i < 30; i++) {
+          var index = Math.getRandomIntInclusive(0,moves.length-1);
+          algorithm+=moves[index] + ' ';
+        }
+        algorithm = algorithm.slice(0, -1); //remove last space
+        rubikView.algorithm(algorithm, 30);
+      }
+      function onWindowResize() {
+
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+      function onMouseMove( event ) {
+      	// calculate mouse position in normalized device coordinates
+      	// (-1 to +1) for both components
+        mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+      	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+      }
+      var arrow;
+      function onMouseDown(event){
+        if (event.button!= 0) {return;}
+        scene.remove ( arrow );
+        arrow = new THREE.ArrowHelper( camera.getWorldDirection(), camera.getWorldPosition(), 100, Math.random() * 0xffffff );
+        scene.add( arrow );
+        console.log("DOWN");
+        // update the picking ray with the camera and mouse position
+        	raycaster.setFromCamera( mouse, camera );
+        	// calculate objects intersecting the picking ray
+        	var intersects = raycaster.intersectObjects( scene.children );
+          console.log(intersects);
+          for ( var i = 0; i < intersects.length; i++ ) {
+        		intersects[ i ].object.material.color.set( 0x000000 );
+        	}
+          //intersects[0].object.material.color.set(CUBES.Colors.Bk);
+      }
+      function onMouseUp(event){
+        if (event.button!= 0) {return;}
+        console.log("up");
+        // update the picking ray with the camera and mouse position
+        	raycaster.setFromCamera( mouse, camera );
+        	// calculate objects intersecting the picking ray
+        	var intersects = raycaster.intersectObjects( scene.children );
+        	for ( var i = 0; i < intersects.length; i++ ) {
+        		intersects[ i ].object.material.color.set( 0x000000 );
+        	}
+          //intersects[0].object.material.color.set(CUBES.Colors.G);
+      }
+      function loadModel(){
+        var materials = {
+          U: new THREE.MeshPhongMaterial( {color: CUBES.Colors.W} ),
+          D: new THREE.MeshPhongMaterial( {color: CUBES.Colors.Y} ),
+          F: new THREE.MeshPhongMaterial( {color: CUBES.Colors.R} ),
+          B: new THREE.MeshPhongMaterial( {color: CUBES.Colors.O} ),
+          R: new THREE.MeshPhongMaterial( {color: CUBES.Colors.B} ),
+          L: new THREE.MeshPhongMaterial( {color: CUBES.Colors.G} )
+        };
+        var onProgress = function ( xhr ) {
+          if ( xhr.lengthComputable ) {
+            var percentComplete = xhr.loaded / xhr.total * 100;
+            console.log( Math.round(percentComplete, 2) + '% downloaded' );
+          }
+        };
+        var onError = function ( xhr ) { };
+        return new Promise(function(resolve, reject) {
+            var objLoader = new THREE.OBJLoader();
+            objLoader.setPath( 'models/333/' );
+            objLoader.load( '333_hitbox.obj', function ( object ) {
+              object.children.forEach(function(child, index){
+                var face = child.name[0];
+                child.material = materials[face];
+              });
+              resolve(object);
+            }, onProgress, onError );
+          });
+      }
+    </script>
+  </body>
+</html>

@@ -20,3 +20,20 @@ Math.getRandomIntInclusive = function getRandomIntInclusive(min, max) {
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+CUBES.Vectors = {
+  U: new THREE.Vector3(0,1,0),
+  D: new THREE.Vector3(0,-1,0),
+  R: new THREE.Vector3(1,0,0),
+  L: new THREE.Vector3(-1,0,0),
+  F: new THREE.Vector3(0,0,1),
+  B: new THREE.Vector3(0,0,-1)
+};
+CUBES.vectorToFace = function vectorToFace(v){
+  if (v.length()!= 1){return null;}
+  if( v.x == 1)  {return "R";}
+  if( v.x == -1) {return "L";}
+  if( v.y == 1)  {return "U";}
+  if( v.y == -1) {return "D";}
+  if( v.z == 1)  {return "F";}
+  if( v.z == -1) {return "B";}
+}
