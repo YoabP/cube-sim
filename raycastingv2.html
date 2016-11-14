@@ -228,19 +228,72 @@
 			function calculateMove(move){
 				//Moves are only legal if they start and end on same face.
 				// Moves cannot start and end on the same piece.
-				if(move.start[0]!= move.end[0] || move.start === move.end){return}
+				// moves cannot start on a center and end on a corner. Vice versa.
+				if(move.start[0]!= move.end[0] || move.start === move.end ||
+					move.start.length === 1 && move.end.length === 3 ||
+					move.end.length === 1 && move.start.length === 3 ){
+						return
+				}
 				var selectedFace = move.start[0];
-				//center moves not supported yet. Centers have len = 1
-				// Moves along two edge pieces, len = 2, are also center moves.
-				if (move.start.length <2 || move.end.length <2 ||
-				move.start.length === 2 && move.end.length === 2){return};
-				//get face they share.
 				var sharedFace, direction;
 				var start, end;
 				//Moves are never done on the collided plane. So remove first plane,
 				// which is the actual plane the piece belongs to.
 				start = move.start.substring(1);
 				end = move.end.substring(1);
+				//Center slice moves. Centers have len = 1
+				// Moves along two edge pieces, len = 2, are also center moves.
+				//// M – Middle layer turn – direction as an L turn between R and L.
+				  // E – Equatorial layer – direction as a D turn between U and D.
+				  // S – Standing layer – direction as an F turn between F and B.
+				if (move.start.length <2 || move.end.length <2 ||
+				move.start.length === 2 && move.end.length === 2){
+						var slice = "MES";
+						switch(selectedFace){
+							case "U": case "D":
+								slice = slice.replace(/E/,'');
+								break;
+							case "R": case "L":
+								slice = slice.replace(/M/,'');
+								break;
+							case "F": case "B":
+								slice = slice.replace(/S/,'');
+								break;
+						}
+						if (start.length === 0 || end.length === 0){
+							var completion = completeMissingStartEnd(start,end);
+							start = start? start: completion.start;
+							end   = end? end: completion.end;
+						}
+						switch (start){
+							case "U": case "D":
+								slice = slice.replace(/E/,'');
+								break;
+							case "R": case "L":
+								slice = slice.replace(/M/,'');
+								break;
+							case "F": case "B":
+								slice = slice.replace(/S/,'');
+								break;
+						}
+						//Active, start = CCW?
+						//// M – Middle layer turn – direction as an L turn between R and L.
+							// E – Equatorial layer – direction as a D turn between U and D.
+							// S – Standing layer – direction as an F turn between F and B.
+						var directionHash = {
+							F:{D: true, R: true},
+							B:{U: true, L: true},
+							U:{F: true, R: true},
+							D:{L: true, B: true},
+							R:{D: true, B: true},
+							L:{U: true, F: true},
+						};
+
+						direction = directionHash[selectedFace][start]?'*':'';
+						console.log(start,end,slice);
+						return slice+direction;
+				};
+				//get face they share.
 				for (var i = 0; i < start.length; i++) {
 					for (var j = 0; j < end.length; j++) {
 						if( start[i] === end[j]){
@@ -257,18 +310,9 @@
 				//Check for start-end completion, moves using edge pieces will
 				// have an empty string on either one.
 				if (start.length === 0 || end.length === 0){
-					var existingSide = start? start: end;
-					var complementingSide;
-					switch (existingSide) {
-						case 'R': complementingSide = 'L'; break;
-						case 'L': complementingSide = 'R'; break;
-						case 'U': complementingSide = 'D'; break;
-						case 'D': complementingSide = 'U'; break;
-						case 'F': complementingSide = 'B'; break;
-						case 'B': complementingSide = 'F'; break;
-					}
-					start = start? start: complementingSide;
-					end   = end? end: complementingSide;
+					var completion = completeMissingStartEnd(start,end);
+					start = start? start: completion.start;
+					end   = end? end: completion.end;
 				}
 				//calculate direction. '*' indicates counter clockwise
 				// Direction has to go on the vector perpendicular to both
@@ -286,7 +330,24 @@
 				console.log(sharedFace+direction);
 				return sharedFace+direction;
 			}
-
+			function isComplementary(face){
+				return face=="B"||face=="L"||face=="D"
+			}
+			function completeMissingStartEnd(start, end){
+				var existingSide = start? start: end;
+				var complementingSide;
+				switch (existingSide) {
+					case 'R': complementingSide = 'L'; break;
+					case 'L': complementingSide = 'R'; break;
+					case 'U': complementingSide = 'D'; break;
+					case 'D': complementingSide = 'U'; break;
+					case 'F': complementingSide = 'B'; break;
+					case 'B': complementingSide = 'F'; break;
+				}
+				start = start? start: complementingSide;
+				end   = end? end: complementingSide;
+				return {start:start, end:end};
+			}
 			function seeHitbox(){
 				b = rubik.getSocket("R").piece.cubie;
 				w = rubik.getSocket("U").piece.cubie;
