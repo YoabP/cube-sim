@@ -6,6 +6,7 @@ CUBES.Orientation = class Orientation {
     this.state = args.state? args.state : 0;
     this.originalState = args.state? args.state : 0;
     this.stateCount = args.stateCount? args.stateCount : 1;
+    this.ignore = args.ignore;
   }
   set(state){
     this.state = state;
@@ -34,6 +35,6 @@ CUBES.Orientation = class Orientation {
     return newOrientation;
   }
   isOriented(){
-    return this.originalState === this.state;
+    return this.ignore? true: this.originalState === this.state;
   }
 }
