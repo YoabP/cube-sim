@@ -30,7 +30,7 @@ CUBES.Cube333 = class Cube333 {
     // UP White face.
     this.centers['U'] = new CUBES.Center({
       rotationStep: 2,
-      piece: new CUBES.Piece({colors:[CUBES.Colors.W]}),
+      piece: new CUBES.Piece({colors:[CUBES.Colors.W], ignoreOrientation: true}),
       sockets: [[this.sockets[0],this.sockets[1],this.sockets[2],
                 this.sockets[3],this.sockets[4],this.sockets[5],
                 this.sockets[6],this.sockets[7]]]
@@ -38,7 +38,7 @@ CUBES.Cube333 = class Cube333 {
     //FRONT Red face.
     this.centers['F'] = new CUBES.Center({
       rotationStep: 2,
-      piece: new CUBES.Piece({colors:[CUBES.Colors.R]}),
+      piece: new CUBES.Piece({colors:[CUBES.Colors.R], ignoreOrientation: true}),
       sockets: [[this.sockets[6],this.sockets[5],this.sockets[4],
                 this.sockets[10],this.sockets[16],this.sockets[17],
                 this.sockets[18],this.sockets[11]]]
@@ -46,7 +46,7 @@ CUBES.Cube333 = class Cube333 {
     //RIGHT Blue face
     this.centers['R'] = new CUBES.Center({
       rotationStep: 2,
-      piece: new CUBES.Piece({colors:[CUBES.Colors.B]}),
+      piece: new CUBES.Piece({colors:[CUBES.Colors.B], ignoreOrientation: true}),
       sockets: [[this.sockets[4],this.sockets[3],this.sockets[2],
                 this.sockets[9],this.sockets[14],this.sockets[15],
                 this.sockets[16],this.sockets[10]]]
@@ -54,7 +54,7 @@ CUBES.Cube333 = class Cube333 {
     //LEFT Green face
     this.centers['L'] = new CUBES.Center({
       rotationStep: 2,
-      piece: new CUBES.Piece({colors:[CUBES.Colors.B]}),
+      piece: new CUBES.Piece({colors:[CUBES.Colors.B], ignoreOrientation: true}),
       sockets: [[this.sockets[0],this.sockets[7],this.sockets[6],
                 this.sockets[11],this.sockets[18],this.sockets[19],
                 this.sockets[12],this.sockets[8]]]
@@ -62,7 +62,7 @@ CUBES.Cube333 = class Cube333 {
     //BACK Orange face
     this.centers['B'] = new CUBES.Center({
       rotationStep: 2,
-      piece: new CUBES.Piece({colors:[CUBES.Colors.O]}),
+      piece: new CUBES.Piece({colors:[CUBES.Colors.O], ignoreOrientation: true}),
       sockets: [[this.sockets[2],this.sockets[1],this.sockets[0],
                 this.sockets[8],this.sockets[12],this.sockets[13],
                 this.sockets[14],this.sockets[9]]]
@@ -70,7 +70,7 @@ CUBES.Cube333 = class Cube333 {
     //DOWN Yellow face
     this.centers['D'] = new CUBES.Center({
       rotationStep: 2,
-      piece: new CUBES.Piece({colors:[CUBES.Colors.Y]}),
+      piece: new CUBES.Piece({colors:[CUBES.Colors.Y], ignoreOrientation: true}),
       sockets: [[this.sockets[18],this.sockets[17],this.sockets[16],
                 this.sockets[15],this.sockets[14],this.sockets[13],
                 this.sockets[12],this.sockets[19]]]
@@ -189,10 +189,10 @@ CUBES.Cube333 = class Cube333 {
           if(currentPiece instanceof CUBES.Corner){ //Orient corners
             // pieces 2 & 6 change orientation counter ClockWise
             var CCW = index == 2 || index == 6;
-            currentPiece.orientationRotate(CCW);
+            currentPiece.orientation.rotate(CCW);
           }
           else{//Orient Edges
-            currentPiece.orientationToggle();
+            currentPiece.orientation.toggle();
           }
         });
         break;
@@ -204,10 +204,10 @@ CUBES.Cube333 = class Cube333 {
           if(currentPiece instanceof CUBES.Corner){ //Orient corners
             // pieces 2 & 6 change orientation counter ClockWise
             var CCW = index == 2 || index == 6;
-            currentPiece.orientationRotate(CCW);
+            currentPiece.orientation.rotate(CCW);
           }
           else{//Orient Edges
-            currentPiece.orientationToggle();
+            currentPiece.orientation.toggle();
           }
         });
         break;
@@ -220,7 +220,7 @@ CUBES.Cube333 = class Cube333 {
           if(currentPiece instanceof CUBES.Corner){ //Orient corners
             // pieces 2 & 6 change orientation counter ClockWise
             var CCW = index == 2 || index == 6;
-            currentPiece.orientationRotate(CCW);
+            currentPiece.orientation.rotate(CCW);
           }
         });
         break;
@@ -232,7 +232,7 @@ CUBES.Cube333 = class Cube333 {
           if(currentPiece instanceof CUBES.Corner){ //Orient corners
             // pieces 2 & 6 change orientation counter ClockWise
             var CCW = index == 2 || index == 6;
-            currentPiece.orientationRotate(CCW);
+            currentPiece.orientation.rotate(CCW);
           }
         });
         break;
@@ -310,17 +310,17 @@ CUBES.Cube333 = class Cube333 {
            var cols = {};
            switch(y){
              case 2: //Top Layer
-               cols.U = piece.colors[piece.orientation];
+               cols.U = piece.colors[piece.orientation.state];
                if (piece instanceof CUBES.Edge){
-                var otherIndx = (piece.orientation + 1)%piece.orientationCount;
+                var otherIndx = (piece.orientation.state + 1)%piece.orientation.stateCount;
                  if(z == 0) cols.B = piece.colors[otherIndx];
                  if(z == 2) cols.F = piece.colors[otherIndx];
                  if(x == 0) cols.L = piece.colors[otherIndx];
                  if(x == 2) cols.R = piece.colors[otherIndx];
                }
                else{ //corners
-                 var CWIndx  = piece.orientationRotatePeek();
-                 var CCWIndx = piece.orientationRotatePeek(true);
+                 var CWIndx  = piece.orientation.rotatePeek();
+                 var CCWIndx = piece.orientation.rotatePeek(true);
                  if(z == x) {
                    cols.F = cols.B = piece.colors[CCWIndx];
                    cols.R = cols.L = piece.colors[CWIndx];
@@ -332,28 +332,28 @@ CUBES.Cube333 = class Cube333 {
                }
                break;
              case 1: //Middle, all ar edges
-                var otherIndx = (piece.orientation + 1)%piece.orientationCount;
+                var otherIndx = (piece.orientation.state + 1)%piece.orientation.stateCount;
                 if(z == 2){
-                  cols.F = piece.colors[piece.orientation];
+                  cols.F = piece.colors[piece.orientation.state];
                 }
                 else{
-                  cols.B = piece.colors[piece.orientation];
+                  cols.B = piece.colors[piece.orientation.state];
                 }
                 if(x == 0) cols.L = piece.colors[otherIndx];
                 if(x == 2) cols.R = piece.colors[otherIndx];
                break;
              case 0: //Bottom
-               cols.D = piece.colors[piece.orientation];
+               cols.D = piece.colors[piece.orientation.state];
                if (piece instanceof CUBES.Edge){
-                var otherIndx = (piece.orientation + 1)%piece.orientationCount;
+                var otherIndx = (piece.orientation.state + 1)%piece.orientation.stateCount;
                  if(z == 0) cols.B = piece.colors[otherIndx];
                  if(z == 2) cols.F = piece.colors[otherIndx];
                  if(x == 0) cols.L = piece.colors[otherIndx];
                  if(x == 2) cols.R = piece.colors[otherIndx];
                }
                else{ //corners
-                 var CWIndx  = piece.orientationRotatePeek();
-                 var CCWIndx = piece.orientationRotatePeek(true);
+                 var CWIndx  = piece.orientation.rotatePeek();
+                 var CCWIndx = piece.orientation.rotatePeek(true);
                  if(z != x) {
                    cols.F = cols.B = piece.colors[CCWIndx];
                    cols.R = cols.L = piece.colors[CWIndx];

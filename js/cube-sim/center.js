@@ -1,12 +1,11 @@
 //represents a center piece. They act as rotation axises
 "use strict";
-CUBES.Center = class Center {
+CUBES.Center = class Center extends CUBES.Piece{
   constructor(args) {
+    super (args);
     args = args? args : {};
     this.sockets  = args.sockets? args.sockets : [];
     this.rotationStep  = args.rotationStep? args.rotationStep : 1;
-    this.orientationCount  = args.orientationCount? args.orientationCount : 0;
-    this.orientation  = args.orientation? args.orientation : 0;
     this.depth  = args.depth? args.depth : 1;
     this.piece  = args.piece? args.piece : null;
   }
@@ -30,6 +29,7 @@ CUBES.Center = class Center {
         this.sockets[depth][0].piece = startingPiece;
       }
     }
+    this.orientation.rotate(CCW);
   }
   log(){
     var str = '[';
