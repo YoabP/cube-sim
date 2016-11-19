@@ -1,6 +1,9 @@
 //Common 3x3x3 cubic puzzle
 "use strict";
-
+/**
+ * Logical model for a 3x3x3 puzzle.
+ * @class
+ */
 CUBES.Cube333 = class Cube333 {
   //Description:
   // Face turning, cube puzzle
@@ -77,68 +80,68 @@ CUBES.Cube333 = class Cube333 {
     });
     //Assign pieces to sockets
     //Top layer
-    this.sockets[0].piece = new CUBES.Corner({
+    this.sockets[0].setPiece(new CUBES.Corner({
       colors:[CUBES.Colors.W, CUBES.Colors.G, CUBES.Colors.O]
-    });
-    this.sockets[1].piece = new CUBES.Edge({
+    }));
+    this.sockets[1].setPiece(new CUBES.Edge({
       colors:[CUBES.Colors.W,CUBES.Colors.O]
-    });
-    this.sockets[2].piece = new CUBES.Corner({
+    }));
+    this.sockets[2].setPiece(new CUBES.Corner({
       colors: [CUBES.Colors.W,CUBES.Colors.O,CUBES.Colors.B]
-    });
-    this.sockets[3].piece =new CUBES.Edge({
+    }));
+    this.sockets[3].setPiece(new CUBES.Edge({
       colors:[CUBES.Colors.W,CUBES.Colors.B]
-    });
-    this.sockets[4].piece =new CUBES.Corner({
+    }));
+    this.sockets[4].setPiece(new CUBES.Corner({
       colors:[CUBES.Colors.W,CUBES.Colors.B,CUBES.Colors.R]
-    });
-    this.sockets[5].piece =new CUBES.Edge({
+    }));
+    this.sockets[5].setPiece(new CUBES.Edge({
       colors:[CUBES.Colors.W, CUBES.Colors.R]
-    });
-    this.sockets[6].piece =new CUBES.Corner({
+    }));
+    this.sockets[6].setPiece(new CUBES.Corner({
       colors:[CUBES.Colors.W,CUBES.Colors.R,CUBES.Colors.G]
-    });
-    this.sockets[7].piece =new CUBES.Edge({
+    }));
+    this.sockets[7].setPiece(new CUBES.Edge({
       colors:[CUBES.Colors.W,CUBES.Colors.G]
-    });
+    }));
     //Back face pointing either back or front for edges that are not
     // on U|D, this applies only to the edges on the middle layer 8-11
-    this.sockets[8].piece =new CUBES.Edge({
+    this.sockets[8].setPiece(new CUBES.Edge({
       colors:[CUBES.Colors.O,CUBES.Colors.G]
-    });
-    this.sockets[9].piece =new CUBES.Edge({
+    }));
+    this.sockets[9].setPiece(new CUBES.Edge({
       colors:[CUBES.Colors.O, CUBES.Colors.B]
-    });
-    this.sockets[10].piece =new CUBES.Edge({
+    }));
+    this.sockets[10].setPiece(new CUBES.Edge({
       colors:[CUBES.Colors.R, CUBES.Colors.B]
-    });
-    this.sockets[11].piece =new CUBES.Edge({
+    }));
+    this.sockets[11].setPiece(new CUBES.Edge({
       colors:[CUBES.Colors.R, CUBES.Colors.G]
-    });
-    this.sockets[12].piece =new CUBES.Corner({
+    }));
+    this.sockets[12].setPiece(new CUBES.Corner({
       colors:[CUBES.Colors.Y, CUBES.Colors.O, CUBES.Colors.G]
-    });
-    this.sockets[13].piece =new CUBES.Edge({
+    }));
+    this.sockets[13].setPiece(new CUBES.Edge({
       colors:[CUBES.Colors.Y, CUBES.Colors.O]
-    });
-    this.sockets[14].piece =new CUBES.Corner({
+    }));
+    this.sockets[14].setPiece(new CUBES.Corner({
       colors:[CUBES.Colors.Y, CUBES.Colors.B, CUBES.Colors.O]
-    });
-    this.sockets[15].piece =new CUBES.Edge({
+    }));
+    this.sockets[15].setPiece(new CUBES.Edge({
       colors:[CUBES.Colors.Y, CUBES.Colors.B]
-    });
-    this.sockets[16].piece =new CUBES.Corner({
+    }));
+    this.sockets[16].setPiece(new CUBES.Corner({
       colors:[CUBES.Colors.Y,CUBES.Colors.R,CUBES.Colors.B]
-    });
-    this.sockets[17].piece =new CUBES.Edge({
+    }));
+    this.sockets[17].setPiece(new CUBES.Edge({
       colors:[CUBES.Colors.Y,CUBES.Colors.R]
-    });
-    this.sockets[18].piece =new CUBES.Corner({
+    }));
+    this.sockets[18].setPiece(new CUBES.Corner({
       colors:[CUBES.Colors.Y,CUBES.Colors.G,CUBES.Colors.R]
-    });
-    this.sockets[19].piece =new CUBES.Edge({
+    }));
+    this.sockets[19].setPiece(new CUBES.Edge({
       colors:[CUBES.Colors.Y,CUBES.Colors.G]
-    });
+    }));
   }
   //TODO: Use logical model instead of object dependant.
   // Iterate over pieces, check correct color (so position)
