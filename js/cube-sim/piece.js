@@ -10,4 +10,7 @@ CUBES.Piece = class Piece {
       ignore: args.ignoreOrientation
     });
   }
+  isOriented(){
+    return this.orientation.isOriented();
+  }
 };

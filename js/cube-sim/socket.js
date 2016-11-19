@@ -19,4 +19,7 @@ CUBES.Socket = class Socket {
   isPositioned(){
     return this.piece === this.originalPiece;
   }
+  isOriented(){
+    return this.piece.isOriented();
+  }
 }

@@ -147,22 +147,12 @@ CUBES.Cube333 = class Cube333 {
   // Iterate over pieces, check correct color (so position)
   // And orientation.
   isSolved(){
-    var solved = true;
-    for (var center in this.centers) {
-      if (this.centers.hasOwnProperty(center)) {
-          var c = this.centers[center];
-          var color = c.cubie[center].material.color;
-          c.sockets[0].forEach(function(socket, index){
-            var c2 = socket.cubie[center].material.color;
-            if(color.r != c2.r ||
-              color.g != c2.g ||
-              color.b != c2.b){
-              solved = false;
-            }
-          });
-      }
+    for (var i = 0; i < this.sockets.length; i++) {
+      if(this.sockets[i] == null) continue;
+      if(!this.sockets[i].isPositioned()) return false;
+      if(!this.sockets[i].isOriented()) return false;
     }
-    return solved;
+    return true;
   }
   //Rotate a slice in the cube, will rotate pieces and adjust orientations.
   // A move with a * indicates it is counter ClockWise
