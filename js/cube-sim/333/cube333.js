@@ -1,4 +1,10 @@
 "use strict";
+
+/**
+ * Cubic 3x3x3 puzzle namespace.
+ * @namespace
+ */
+CUBES.Cube333 = {};
 /**
  * Logical model for a 3x3x3 puzzle.<br>
  * <pre>
@@ -27,9 +33,8 @@
  *    front or back if they are on the middle slice.
  * </pre>
  * @class
- * @namespace
  */
-CUBES.Cube333 = class Cube333 {
+CUBES.Cube333.Model = class Model {
   /**
    * Creates Cube33 object.
    */

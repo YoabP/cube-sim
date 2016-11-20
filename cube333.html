@@ -84,7 +84,7 @@
 				scene.add(camera);
 
 				//Draw cube
-	      rubik = new CUBES.Cube333();
+	      rubik = new CUBES.Cube333.Model();
 				rubik.initRenderer();
 	      rubikView = new CUBES.Cube333.View(rubik,scene);
 				rubikView.loaded.then(function(){//(camera, controls, scene, view)
@@ -158,7 +158,7 @@
       function restore(){
         scene.remove(rubik.object3D);
         scene.remove(rubikView.object3D);
-        rubik = new CUBES.Cube333();
+        rubik = new CUBES.Cube333.Model();
         rubikView = new CUBES.Cube333.View(rubik,scene);
         rubik.initRenderer();
         rubikView.loaded.then(function(){
