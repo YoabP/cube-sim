@@ -1,30 +1,53 @@
-//Common 3x3x3 cubic puzzle
 "use strict";
+
 /**
- * Logical model for a 3x3x3 puzzle.
+ * Cubic 3x3x3 puzzle namespace.
+ * @namespace
+ */
+CUBES.Cube333 = {};
+/**
+ * Logical model for a 3x3x3 puzzle.<br>
+ * <pre>
+ * Face turning, cube puzzle
+ * 6 centers, affecting 9 pieces each
+ * Center faces:
+ *     [1B]
+ * [2L][0U][3R]
+ *     [4F]
+ *     [5D]
+ * Center piece structure:
+ * [0][1][2]
+ * [7][c][3]
+ * [6][5][4]
+ *
+ * Socket 3D space. C indicates a center.
+ * Top layer     Middle layer      Bottom Layer
+ * [0][1][2]     [ 8][ c][ 9]     [12][13][14]
+ * [7][c][3]     [ c][  ][ c]     [19][ c][15]
+ * [6][5][4]     [11][ c][10]     [18][17][16]
+ *
+ * Corner Pieces: Orientation indicates the index of the color currently
+ *    facing top or down, depending on what socket they are.
+ * Edge Pieces: Orientation indicates the index of the color facing
+ *    top or down if they are on the U|D slices
+ *    front or back if they are on the middle slice.
+ * </pre>
  * @class
  */
-CUBES.Cube333 = class Cube333 {
-  //Description:
-  // Face turning, cube puzzle
-  // 6 centers, affecting 9 pieces each
-  // Center colors:
-  //     [1B]
-  // [2L][0U][3R]
-  //     [4F]
-  //     [5D]
-  // Center piece structure:
-  // [0][1][2]
-  // [7][c][3]
-  // [6][5][4]
-  //
-  // Socket 3D space. C indicates a center.
-  // Top layer     Middle layer      Bottom Layer
-  // [0][1][2]     [ 8][ c][ 9]     [12][13][14]
-  // [7][c][3]     [ c][  ][ c]     [19][ c][15]
-  // [6][5][4]     [11][ c][10]     [18][17][16]
+CUBES.Cube333.Model = class Model {
+  /**
+   * Creates Cube33 object.
+   */
   constructor() {
+    /**
+     * Center pieces for each face (R,L,U,D,F,B).
+     * @type {Object.<string, CUBES.Center>}
+     */
     this.centers = {};
+    /**
+     * Array of sockets in this puzzle.
+     * @type {CUBES.Socket[]}
+     */
     this.sockets = [];
     //Build the puzzle 'space' with sockets.
     for (var i = 0; i < 20; i++) {
@@ -143,9 +166,12 @@ CUBES.Cube333 = class Cube333 {
       colors:[CUBES.Colors.Y,CUBES.Colors.G]
     }));
   }
-  //TODO: Use logical model instead of object dependant.
-  // Iterate over pieces, check correct color (so position)
-  // And orientation.
+
+  /**
+   * Checks if every piece is in the correct socket
+   * and oriented.
+   * @returns {bool} true if solved, false otherwise.
+   */
   isSolved(){
     for (var i = 0; i < this.sockets.length; i++) {
       if(this.sockets[i] == null) continue;
@@ -154,14 +180,14 @@ CUBES.Cube333 = class Cube333 {
     }
     return true;
   }
-  //Rotate a slice in the cube, will rotate pieces and adjust orientations.
-  // A move with a * indicates it is counter ClockWise
-  // Notes on orientation:
-  // Corner Pieces: Orientation indicates the index of the color currently
-  //    facing top or down, depending on what socket they are.
-  // Edge Pieces: Orientation indicates the index of the color facing
-  //    top or down if they are on the U|D slices
-  //    front or back if they are on the middle slice.
+
+  /**
+   * Rotate the puzzle executing the given move.
+   * Pieces position and orientation is changed accordingly.
+   * @param {string} move - The move to execute.
+   * Moves are described by the regular expression /(R|L|U|D|F|B)*?/
+   * The * indicates a move is counter clockwise
+   */
   rotate(move){
     switch (move) {
       //U&D moves change no orientation.
@@ -231,10 +257,13 @@ CUBES.Cube333 = class Cube333 {
         break;
     }
   }
-  //Builds a cube made of the pieces in the cube.
-  // TODO: make it animation ready. May need to change to a more loosee
-  //  logic - visualization scheme. For now this will serve for logic testing
-  //  as the renderer will follow logical model exactly.
+  /**
+   * Initializes the debug render.
+   * The debug renderer is not animated
+   * nor is it pretty.
+   * But it builds the model directly from logical model
+   * so it should always be in sync.
+   */
   initRenderer(){
       var cols = {
         F: CUBES.Colors.R,
@@ -262,6 +291,11 @@ CUBES.Cube333 = class Cube333 {
       this._positionSocketCubies(sz );
       this._positionCenterCubies(sz);
   }
+  /**
+   * Positions pieces for the debug renderer.
+   * @param {number} size - size of the pieces.
+   * @private
+   */
   _positionSocketCubies(size){
     for (var y = 0; y < 3; y++) {
       for (var z = 0; z < 3; z++) {
@@ -276,6 +310,11 @@ CUBES.Cube333 = class Cube333 {
       }
     }
   }
+  /**
+   * Positions center pieces for the debug renderer.
+   * @param {number} size - size of the pieces.
+   * @private
+   */
   _positionCenterCubies(size){
     this.centers['U'].cubie.object3D.position.y = size;
     this.centers['D'].cubie.object3D.position.y = -size;
@@ -286,11 +325,18 @@ CUBES.Cube333 = class Cube333 {
     this.centers['F'].cubie.object3D.position.z = size;
     this.centers['B'].cubie.object3D.position.z = -size;
   }
-
+  /**
+   * Updates the debug renderer.
+   * Checks model and recolor pieces accordingly
+   */
   updateRenderer(){
-    //Check model and recolor pieces accordingly
     this._recolorSocketCubies()
   }
+  /**
+   * Recolors each piece according to their orientation.
+   * Used by debug renderer.
+   * @private
+   */
   _recolorSocketCubies(){
     for (var y = 0; y < 3; y++) {
       for (var z = 0; z < 3; z++) {
@@ -363,6 +409,11 @@ CUBES.Cube333 = class Cube333 {
       }
     }
   }
+  /**
+   * Return an array of sockets given their names.
+   * @param {string[]} names - Array of socket names.
+   * @returns {CUBES.Socket[]} Array of sockets.
+   */
   getSockets(names){
     var sockets = [];
     var self = this;
@@ -371,6 +422,16 @@ CUBES.Cube333 = class Cube333 {
     });
     return sockets;
   }
+  /**
+   * Returns the socket matching the given string.
+   * Names indicate the faces they belong to.
+   * Face order is irrelevant.
+   * 'UFR','FRU','UFR' all return the same socket.
+   *
+   * @param {string} name - Name of the requested socket.
+   * @returns {CUBES.Socket} The socket matching the name.
+   * undefined if it is not found.
+   */
   getSocket(name){
     var faces = name.split('');
     var x,y,z;
@@ -399,7 +460,11 @@ CUBES.Cube333 = class Cube333 {
 };
 
 //static vars
-// Maps socket 3D [y][z][x] space to socket index.
+/**
+ * Maps socket 3D [y][z][x] space to socket index.
+ * @static
+ * @type {number[][][]}
+ */
 CUBES.Cube333.pieceSocketMap = [];
 // Top layer     Middle layer      Bottom Layer
 // [0][1][2]     [ 8][ c][ 9]     [12][13][14]

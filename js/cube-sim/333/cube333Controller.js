@@ -1,19 +1,69 @@
 //Common 3x3x3 cubic puzzle
 "use strict";
-//Raycast controller. Invisible model recieves raycast instructions.
-// Sends them to a Visualization.
+/**
+ * Raycast controller. Invisible hitbox model recieves
+ * raycast instructions and sends them to the visualization.
+ * @class
+ */
 CUBES.Cube333.Controller = class Controller {
-  //Need camera
+  /**
+   * Create a controller object for a visualization.
+   *
+   * @param  {THREE.Camera} camera - The camera on the scene.
+   * @param  {THREE.TrackballControls} controls - The controls on the scene.
+   * @param  {CUBES.Cube333.View} view - The view affected by the controller.
+   */
   constructor(camera, controls, view) {
+
+    /**
+     * Camera used for raycasting.
+     * @type {THREE.Camera}
+     */
     this.camera = camera;
+    /**
+     * Controls from the scene. They will be disabled
+     * while the cube is being raycasted.
+     * @type {THREE.TrackballControls}
+     */
     this.controls = controls;
+    /**
+     * View affected by the controlers. Calculated
+     * moves will be sent to the view.
+     * @type {CUBES.Cube333.View}
+     */
     this.view = view;
+    /**
+     * Objects that will be detected by raycasting.
+     * @type {THREE.Object3D[]}
+     */
     this.rayCastObjects = [];
+    /**
+     * The root object 3D for the hitbox object.
+     * @type {THREE.Object3D}
+     */
     this.object3D = null;
+    /**
+     * Raycaster used by the controller.
+     * @type {THREE.Raycaster}
+     */
     this.raycaster =	new THREE.Raycaster();
-    this.mouse =new THREE.Vector2();;
+    /**
+     * Vector represnting mouse position.
+     * @type {THREE.Vector2}
+     */
+    this.mouse =new THREE.Vector2();
+    /**
+     * Object that lists where the move starts and ends.
+     * @type {{start: string, end: string, c}}
+     */
     this.moveLister = {start:"", end:""};
     var self = this;
+    /**
+     * Describes if object is loaded. A promise
+     * to be used to chain events onto the loading.
+     * Resolves to true when loaded.
+     * @type {Promise}
+     */
     this.loaded = new Promise(function(resolve, reject){
       self.loadModel().then(function(model){
         self.object3D = model;
@@ -26,14 +76,22 @@ CUBES.Cube333.Controller = class Controller {
     });
   }
   //Listeners
+  /**
+   * Function to execute on mouse move event.
+   * @param  {object} event - Mouse move event.
+   */
   onDocumentMouseMove( event ) {
     event.preventDefault();
     this.mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
     this.mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
   }
+  /**
+   * Function to execute on mouse down event.
+   * @param  {object} event - Mouse down event.
+   */
   onDocumentMouseDown( event ) {
     event.preventDefault();
-    var sel = this.getObjectOnMouse( this.mouse, this.camera, this.rayCastObjects);
+    var sel = this.getObjectOnMouse();
     if (sel){
       this.controls.enabled = false;
       this.moveLister.start = sel.name;
@@ -42,11 +100,14 @@ CUBES.Cube333.Controller = class Controller {
       this.moveLister = {};
     }
   }
-
+  /**
+   * Function to execute on mouse up event.
+   * @param  {object} event - Mouse up event.
+   */
   onDocumentMouseUp( event ) {
     event.preventDefault();
     this.controls.enabled = true;
-    var sel = this.getObjectOnMouse(this.mouse, this.camera, this.rayCastObjects);
+    var sel = this.getObjectOnMouse();
     if (sel && this.moveLister.start){
       this.moveLister.end = sel.name;
       var move = this.calculateMove(this.moveLister);
@@ -56,7 +117,11 @@ CUBES.Cube333.Controller = class Controller {
     }
     this.moveLister = {};
   }
-
+  /**
+   * Loads the model used as a hitbox.
+   * Used by constructor.
+   * @return {Promise}  Promise resolved when load finishes.
+   */
   loadModel(){
     var materials = {
       U: new THREE.MeshPhongMaterial( {color: CUBES.Colors.W} ),
@@ -88,15 +153,25 @@ CUBES.Cube333.Controller = class Controller {
         }, onProgress, onError );
       });
   }
-  getObjectOnMouse(mouse, camera, rayCastObjects){
-    this.raycaster.setFromCamera( mouse, camera );
-    var intersects = this.raycaster.intersectObjects( rayCastObjects );
+  /**
+   * Gets the object currently on mouse position.
+   * @return {THREE.Object3D} 3D object selected by the raycaster.
+   */
+  getObjectOnMouse(){
+    this.raycaster.setFromCamera( this.mouse, this.camera );
+    var intersects = this.raycaster.intersectObjects( this.rayCastObjects );
     if ( intersects.length > 0 ) {
       return intersects[ 0 ].object;
     }
     return null;
   }
-
+  /**
+   * Calculates a move based on the start and end pieces.
+   * @param  {object} move - Object describing move.
+   * @param  {string} move.start - String describing where move starts.
+   * @param  {string} move.end   - String describing where move ends.
+   * @return {string} String representing the resulting move.
+   */
   calculateMove(move){
     //Moves are only legal if they start and end on same face.
     // Moves cannot start and end on the same piece.
@@ -133,7 +208,7 @@ CUBES.Cube333.Controller = class Controller {
             break;
         }
         if (start.length === 0 || end.length === 0){
-          var completion = this.completeMissingStartEnd(start,end);
+          var completion = this._completeMissingStartEnd(start,end);
           start = start? start: completion.start;
           end   = end? end: completion.end;
         }
@@ -177,7 +252,7 @@ CUBES.Cube333.Controller = class Controller {
     //Check for start-end completion, moves using edge pieces will
     // have an empty string on either one.
     if (start.length === 0 || end.length === 0){
-      var completion = this.completeMissingStartEnd(start,end);
+      var completion = this._completeMissingStartEnd(start,end);
       start = start? start: completion.start;
       end   = end? end: completion.end;
     }
@@ -195,7 +270,15 @@ CUBES.Cube333.Controller = class Controller {
     direction = resultingFace === start? '':'*';
     return sharedFace+direction;
   }
-  completeMissingStartEnd(start, end){
+  /**
+   * Calculate where a move ends based on the start.
+   * And vice versa.
+   * @private
+   * @param  {string} start - Start face string.
+   * @param  {string} end   - Ending face string.
+   * @return {object} object containing complete start and end strings.
+   */
+  _completeMissingStartEnd(start, end){
     var existingSide = start? start: end;
     var complementingSide;
     switch (existingSide) {

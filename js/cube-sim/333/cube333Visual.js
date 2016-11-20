@@ -1,13 +1,48 @@
 //Common 3x3x3 cubic puzzle
 "use strict";
-//Visualization of the 333 puzzle.
-// Needs a logical model and scene to work.
+/**
+ * Visualization of the 333 puzzle.
+ * Needs a logical model and scene to work.
+ * @class
+ */
 CUBES.Cube333.View = class View {
+  /**
+   * Creates a view object.
+   * @param  {CUBES.Cube333} rubik - logical model to use.
+   * @param  {THREE.Scene} scene - Scene were view is loaded.
+   */
   constructor(rubik,scene) {
+    /**
+     * Logical model used by the view. Any animated move
+     * is also executed in the logical model.
+     * @type {CUBES.Cube333}
+     */
     this.logic = rubik;
+    /**
+     * If it can currently rotate. You cannot rotate
+     * while an animation is going on.
+     * @type {bool}
+     */
     this.canRotate = true;
+    /**
+     * An object used to attach things into the visualization.
+     * Also used for rotations.
+     * @type {THREE.Object3D}
+     */
     this.root = new THREE.Object3D();
+    /**
+     * The root of the visualization object 3D.
+     * Not to be confused with [root]{@linkcode CUBES.Cube333.View#root}.
+     * @type {THREE.Object3D}
+     */
+    this.object3D = undefined;
     var self = this;
+    /**
+     * Describes if object is loaded. A promise
+     * to be used to chain events onto the loading.
+     * Resolves to true when loaded.
+     * @type {Promise}
+     */
     this.loaded = new Promise(function(resolve, reject){
       self.loadModel().then(function(model){
         CUBES.Cube333.View.bind(model,rubik);
@@ -18,9 +53,12 @@ CUBES.Cube333.View = class View {
       });
     });
   }
-  //Execute an algorithm.
-  // algorithm - Algorithm to execute, a string like "R R R* U.
-  // ms - miliseconds each move animation will take.
+  /**
+   * Execute an algorithm.
+   * @param  {string} algorithm - Algorithm to execute, a string like "R R R* U".
+   * @param  {number} ms        - miliseconds each move animation will take.
+   * @return {Promise} Promise that resolves when algorithm ends.
+   */
   algorithm(algorithm,ms){
     //patch to format
     algorithm = algorithm.replace(/'/g, '*');
@@ -28,6 +66,14 @@ CUBES.Cube333.View = class View {
     var moves = algorithm.split(' ');
     return this._algorithmR(moves,ms);
   }
+  /**
+   * Recursively executes moves on an algorithm chain.
+   * @private
+   * @param  {string[]} moves - Algorithm to execute,
+   * a string array like ["R","R","R*","U"].
+   * @param  {number} ms        - miliseconds each move animation will take.
+   * @return {Promise} Promise that resolves when algorithm ends.
+   */
   _algorithmR(moves,ms) {
     var self = this;
     ms = ms? ms: 300;
@@ -43,6 +89,13 @@ CUBES.Cube333.View = class View {
         return ended? ended:self._algorithmR(moves,ms);
     });
   }
+  /**
+   * Animates a rotation of the given move.
+   * @private
+   * @param  {string} move - Move to execute.
+   * @param  {number} ms   - miliseconds the animation will take.
+   * @return {Promise} Promise that resolves when animation ends.
+   */
   rotate(move, ms){
     var self = this;
     var face, CCW;
@@ -71,7 +124,14 @@ CUBES.Cube333.View = class View {
       });
     }
   }
-  //Rotation method for faces.
+  /**
+   * Rotation method for faces.
+   * @private
+   * @param  {string} face - Face to rotate.
+   * @param  {bool} CCW    - If rotation should be counter clockwise.
+   * @param  {number} ms   - miliseconds the animation should take.
+   * @return {Promise} Promise that resolves when animation finishes.
+   */
   _rotateFaces(face, CCW, ms){
     var self = this;
     return new Promise(function(resolve, reject){
@@ -132,11 +192,19 @@ CUBES.Cube333.View = class View {
       tween.start();
     });
   }
-  //Rotation method for "special" moves. Moves for middle layers.
-  // This moves require the movement of 2 faces, and whole cube rotation.
-  // M – Middle layer turn – in the same direction as an L turn between R and L.
-  // E – Equatorial layer – direction as a D turn between U and D.
-  // S – Standing layer – direction as an F turn between F and B.
+
+  /**
+   * Rotation method for "special" moves. Moves for middle layers.
+   * This moves require the movement of 2 faces, and whole cube rotation. <br>
+   * M – Middle layer turn – in the same direction as an L turn between R and L.<br>
+   * E – Equatorial layer – direction as a D turn between U and D.<br>
+   * S – Standing layer – direction as an F turn between F and B.
+   * @private
+   * @param  {string} face - Face to rotate.
+   * @param  {bool} CCW    - If rotation should be counter clockwise.
+   * @param  {number} ms   - miliseconds the animation should take.
+   * @return {Promise} Promise that resolves when animation finishes.
+   */
   _rotateSlices(slice, CCW, ms){
     var self = this;
     var rotation,target;
@@ -200,7 +268,10 @@ CUBES.Cube333.View = class View {
       });
   }
 
-  //Loads the 3D model. Must be called before using view.
+  /**
+   * Loads the 3D model. Called by constructor.
+   * @return {Promise}  Promise resolved when load finishes.
+   */
   loadModel(){
     var onProgress = function ( xhr ) {
       if ( xhr.lengthComputable ) {
@@ -226,8 +297,11 @@ CUBES.Cube333.View = class View {
   }
 }
 //Static methods
-
-//Binds a 3D model, with a logical model.
+/**
+ * Binds a 3D model, with a logical model.
+ * @param  {THREE.Object3D} model - root of the object 3D containing cube pieces.
+ * @param  {CUBES.Cube333} rubik - Logical model for puzzle.
+ */
 CUBES.Cube333.View.bind = function bind(model, rubik){
   model.children.forEach(function(elem, index){
     rubik.getSocket(elem.name).piece.cubie = elem;
