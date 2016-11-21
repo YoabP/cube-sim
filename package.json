@@ -32,6 +32,8 @@
     "serve-favicon": "~2.3.0",
     "sweetalert2": "^6.1.0",
     "three": "^0.82.1",
-    "tween.js": "^16.3.5"
+    "tween.js": "^16.3.5",
+    "mongodb": "^2.2.11",
+    "monk": "^3.1.3"
   }
 }

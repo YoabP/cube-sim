@@ -4,10 +4,15 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var mongo = require('mongodb');
+var monk = require('monk');
+var db = monk('localhost:27017/cube-sim');
 
+//Route handlers
 var index = require('./routes/index');
 var users = require('./routes/users');
-
+var puzzle =  require('./routes/puzzle');
+var scores =  require('./routes/scores');
 var app = express();
 
 // view engine setup
@@ -22,8 +27,20 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Make our db accessible to our router
+app.use(function(req,res,next){
+    req.db = db;
+    next();
+});
+
 app.use('/', index);
 app.use('/users', users);
+app.use('/puzzle', puzzle);
+app.use('/scores', scores);
+
+//static file serving
+app.use('/js', express.static(path.join(__dirname, 'js')));
+app.use('/modules', express.static(path.join(__dirname, 'node_modules')));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

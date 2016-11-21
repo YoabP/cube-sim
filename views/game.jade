@@ -1,0 +1,175 @@
+doctype html
+html(lang='en')
+  head
+    title= title
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0')
+    link(rel='stylesheet', type='text/css', href='/stylesheets/cubeSim.css', media='screen')
+    link(rel='stylesheet', type='text/css', href='/modules/sweetalert2/dist/sweetalert2.min.css')
+    style.
+      body {
+      font-family: Monospace;
+      background-color: #f0f0f0;
+      margin: 0px;
+      overflow: hidden;
+      }
+  body
+    script(src='/modules/es6-promise/dist/es6-promise.auto.min.js')
+    script(src='/modules/sweetalert2/dist/sweetalert2.min.js')
+    script(src='/modules/easytimer/dist/easytimer.min.js')
+    script(src='/modules/three/build/three.min.js')
+    script(src='/modules/three/examples/js/controls/TrackballControls.js')
+    script(src='/modules/three/examples/js/loaders/DDSLoader.js')
+    script(src='/modules/three/examples/js/loaders/MTLLoader.js')
+    script(src='/modules/three/examples/js/loaders/OBJLoader.js')
+    script(src='/modules/tween.js/src/Tween.js')
+    script(src='/js/cube-sim/init.js')
+    script(src='/js/cube-sim/Orientation.js')
+    script(src='/js/cube-sim/piece.js')
+    script(src='/js/cube-sim/socket.js')
+    script(src='/js/cube-sim/center.js')
+    script(src='/js/cube-sim/corner.js')
+    script(src='/js/cube-sim/edge.js')
+    script(src='/js/cube-sim/coloredCube.js')
+    script(src='/js/cube-sim/333/cube333.js')
+    script(src='/js/cube-sim/333/cube333Visual.js')
+    script(src='/js/cube-sim/333/cube333Controller.js')
+    script.
+      var container, timer, timerHTML;
+      var scrambled = false;
+      var camera, controls, scene, renderer;
+      var rubik, rubikView, rubikController;
+      init("#{type}");
+      animate();
+      function init(type) {
+      container = document.createElement( 'div' );
+      document.body.appendChild( container );
+      camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
+      camera.position.z = 5;
+      controls = new THREE.TrackballControls( camera );
+      controls.rotateSpeed = 1.0;
+      controls.zoomSpeed = 1.2;
+      controls.panSpeed = 0.8;
+      controls.noZoom = false;
+      controls.noPan = false;
+      controls.staticMoving = true;
+      controls.dynamicDampingFactor = 0.3;
+      scene = new THREE.Scene();
+      scene.add( new THREE.AmbientLight( 0x505050 ) );
+      var light = new THREE.SpotLight( 0xffffff, 1.5 );
+      light.position.set( 0, 500, 2000 );
+      light.castShadow = true;
+      light.shadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 50, 1, 200, 10000 ) );
+      light.shadow.bias = - 0.00022;
+      light.shadow.mapSize.width = 2048;
+      light.shadow.mapSize.height = 2048;
+      camera.add( light );
+      scene.add(camera);
+      //Draw cube
+      rubik = new CUBES[type].Model();
+      rubik.initRenderer();
+      rubikView = new CUBES[type].View(rubik,scene);
+      rubikView.loaded.then(function(){//(camera, controls, scene, view)
+      rubikController = new CUBES[type].Controller(camera, controls, rubikView);
+      rubikController.loaded.then(function(){
+      renderer.domElement.addEventListener( 'mousemove', function(event){rubikController.onDocumentMouseMove(event);}, false );
+      renderer.domElement.addEventListener( 'mousedown', function(event){rubikController.onDocumentMouseDown(event);}, false );
+      renderer.domElement.addEventListener( 'mouseup', function(event){rubikController.onDocumentMouseUp(event);}, false );
+      });
+      });
+      renderer = new THREE.WebGLRenderer( { antialias: true } );
+      renderer.setClearColor('#282c34');
+      renderer.setPixelRatio( window.devicePixelRatio );
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      renderer.sortObjects = false;
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFShadowMap;
+      container.appendChild( renderer.domElement );
+      var menu = document.createElement( 'div' );
+      menu.style.position = 'absolute';
+      menu.style.top = '10px';
+      menu.style.width = '100%';
+      menu.style.textAlign = 'center';
+      var scramble = document.createElement('button');
+      scramble.classList.add('btn', 'btn-primary', 'btn-lg', 'outline');
+      scramble.onclick = scrambleButton;
+      scramble.innerHTML = "Scramble";
+      menu.appendChild(scramble);
+      var solve = document.createElement('button');
+      solve.classList.add('btn', 'btn-primary', 'btn-lg', 'outline');
+      solve.onclick = solveButton;
+      solve.innerHTML = "Solve";
+      menu.appendChild(solve);
+      timerHTML = document.createElement('div');
+      timerHTML.id = 'timer';
+      timer = new Timer();
+      menu.appendChild(timerHTML);
+      container.appendChild(menu);
+      window.addEventListener( 'resize', onWindowResize, false );
+      }
+      function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      }
+      function animate() {
+      requestAnimationFrame( animate );
+      render();
+      }
+      function render() {
+      controls.update();
+      TWEEN.update();
+      rubik.updateRenderer();
+      checkForSolve();
+      renderer.render( scene, camera );
+      }
+      function restore(){
+      scene.remove(rubik.object3D);
+      scene.remove(rubikView.object3D);
+      rubik = new CUBES[rubik.type].Model();
+      rubikView = new CUBES[rubik.type].View(rubik,scene);
+      rubik.initRenderer();
+      rubikView.loaded.then(function(){
+      rubikController.view = rubikView;
+      rubikView.root.add(rubikController.object3D);
+      });
+      }
+      function solveButton(){
+      console.log("SOLVE");
+      restore();
+      scrambled = false;
+      timerHTML.innerHTML = "";
+      timer.stop();
+      }
+      function scrambleButton(){
+      console.log("SCRAMBLE");
+      var moves =['U','D','L','R','F','B'];
+      var algorithm = '';
+      for (var i = 0; i < 30; i++) {
+      var index = Math.getRandomIntInclusive(0,moves.length-1);
+      algorithm+=moves[index] + ' ';
+      }
+      algorithm = algorithm.slice(0, -1); //remove last space
+      rubikView.algorithm(algorithm, 30).then(function(){
+      console.log("DONE");
+      scrambled = true;
+      timer.start({precision: 'secondTenths', callback: updateTimer});
+      })
+      }
+      function updateTimer(values) {
+      timerHTML.innerHTML = values.toString(['hours', 'minutes', 'seconds', 'secondTenths']);
+      }
+      function checkForSolve(){
+      if(scrambled && rubik.isSolved()){
+      if(!timer.isRunning()) return;
+      scrambled = false;
+      var time = timer.getTimeValues().toString(['hours', 'minutes', 'seconds', 'secondTenths']);
+      timer.stop();
+      swal({
+      title: "Well Done!",
+      text: "Your solve: "+ time,
+      type: "success",
+      confirmButtonText: "Cool"
+      });
+      }
+      }
