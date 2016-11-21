@@ -39,6 +39,12 @@ CUBES.Cube333.Model = class Model {
    * Creates Cube33 object.
    */
   constructor() {
+
+    /**
+     * Type of puzzle.
+     * @type {string}    
+     */
+    this.type = "Cube333";
     /**
      * Center pieces for each face (R,L,U,D,F,B).
      * @type {Object.<string, CUBES.Center>}
