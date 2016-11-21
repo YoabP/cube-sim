@@ -1,10 +1,10 @@
 {
   "name": "cube-sim",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "Twisty puzzle simulator.",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./bin/www"
   },
   "repository": {
     "type": "git",
@@ -21,7 +21,15 @@
   },
   "homepage": "https://github.com/YoabP/cube-sim#readme",
   "dependencies": {
+    "body-parser": "~1.15.2",
+    "bootstrap": "^3.3.7",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.2.0",
     "easytimer": "^1.1.1",
+    "express": "~4.14.0",
+    "jade": "~1.11.0",
+    "morgan": "~1.7.0",
+    "serve-favicon": "~2.3.0",
     "sweetalert2": "^6.1.0",
     "three": "^0.82.1",
     "tween.js": "^16.3.5"
