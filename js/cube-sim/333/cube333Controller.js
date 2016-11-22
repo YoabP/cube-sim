@@ -140,7 +140,7 @@ CUBES.Cube333.Controller = class Controller {
     var onError = function ( xhr ) { };
     return new Promise(function(resolve, reject) {
         var objLoader = new THREE.OBJLoader();
-        objLoader.setPath( 'models/333/' );
+        objLoader.setPath( '/models/333/' );
         objLoader.load( '333_hitbox.obj', function ( object ) {
           object.children.forEach(function(child, index){
             var face = child.name[0];

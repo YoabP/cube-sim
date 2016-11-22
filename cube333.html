@@ -46,11 +46,10 @@
       var scrambled = false;
 			var camera, controls, scene, renderer;
 			var rubik, rubikView, rubikController;
-			init();
+			init("Cube333");
 			animate();
 
-			function init() {
-
+			function init(type) {
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
 
@@ -84,17 +83,17 @@
 				scene.add(camera);
 
 				//Draw cube
-	      rubik = new CUBES.Cube333.Model();
+	      rubik = new CUBES[type].Model();
 				rubik.initRenderer();
-	      rubikView = new CUBES.Cube333.View(rubik,scene);
+	      rubikView = new CUBES[type].View(rubik,scene);
 				rubikView.loaded.then(function(){//(camera, controls, scene, view)
-					rubikController = new CUBES.Cube333.Controller(camera, controls, rubikView);
+					rubikController = new CUBES[type].Controller(camera, controls, rubikView);
 					rubikController.loaded.then(function(){
 						renderer.domElement.addEventListener( 'mousemove', function(event){rubikController.onDocumentMouseMove(event);}, false );
 						renderer.domElement.addEventListener( 'mousedown', function(event){rubikController.onDocumentMouseDown(event);}, false );
 						renderer.domElement.addEventListener( 'mouseup', function(event){rubikController.onDocumentMouseUp(event);}, false );
 					});
-				})
+				});
 
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setClearColor('#282c34');
@@ -156,10 +155,11 @@
 				renderer.render( scene, camera );
 			}
       function restore(){
+
         scene.remove(rubik.object3D);
         scene.remove(rubikView.object3D);
-        rubik = new CUBES.Cube333.Model();
-        rubikView = new CUBES.Cube333.View(rubik,scene);
+        rubik = new CUBES[rubik.type].Model();
+        rubikView = new CUBES[rubik.type].View(rubik,scene);
         rubik.initRenderer();
         rubikView.loaded.then(function(){
           rubikController.view = rubikView;
