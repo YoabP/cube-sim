@@ -4,9 +4,10 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var mongo = require('mongodb');
-var monk = require('monk');
-var db = monk('localhost:27017/cube-sim');
+var passport = require('passport');
+var db = require("./config/db");
+
+require('./config/passport');
 
 //Route handlers
 var index = require('./routes/index');
@@ -32,6 +33,7 @@ app.use(function(req,res,next){
     req.db = db;
     next();
 });
+app.use(passport.initialize());
 
 app.use('/', index);
 app.use('/users', users);
@@ -48,9 +50,13 @@ app.use(function(req, res, next) {
   err.status = 404;
   next(err);
 });
-
 // error handler
 app.use(function(err, req, res, next) {
+  if (err.name === 'UnauthorizedError') {
+    res.status(401);
+    res.json({"message" : err.name + ": " + err.message});
+    return;
+  }
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};

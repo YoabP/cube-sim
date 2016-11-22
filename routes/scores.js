@@ -1,8 +1,14 @@
 var express = require('express');
 var router = express.Router();
+var config = require('../config');
+var jwt = require('express-jwt');
+var auth = jwt({
+  secret: config.SECRET,
+  userProperty: 'payload'
+});
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
+router.get('/',auth, function(req, res, next) {
   var db = req.db;
   var collection = db.get('scoresCollection');
 
@@ -12,7 +18,7 @@ router.get('/', function(req, res, next) {
 });
 
 /* POST to scores */
-router.post('/', function(req, res) {
+router.post('/',auth, function(req, res) {
     // Set our internal DB variable
     var db = req.db;
 
