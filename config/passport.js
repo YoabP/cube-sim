@@ -29,6 +29,6 @@ passport.use(new LocalStrategy({
 ));
 function validPassword(password, passData){
   //var hash = crypto.pbkdf2Sync(password, passData.salt, 1000, 64, 'SHA1', (err, verify) => {}).toString('hex');
-  var hash = crypto.pbkdf2Sync('secret', 'salt', 1000, 64).toString('hex');
+  var hash = crypto.pbkdf2Sync(password, passData.salt, 1000, 64).toString('hex');
   return passData.hash === hash;
 }

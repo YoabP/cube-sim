@@ -17,7 +17,7 @@ block content
               .col-lg-12
                 form#login-form(action='users/login', method='post', role='form', style='display: block;')
                   .form-group
-                    input#username.form-control(type='text', name='name', tabindex='1', placeholder='Username', value='')
+                    input#email.form-control(type='email', name='email', tabindex='1', placeholder='Email Address', value='')
                   .form-group
                     input#password.form-control(type='password', name='password', tabindex='2', placeholder='Password')
                   .form-group
@@ -72,7 +72,38 @@ block content
     });
     function processLoginForm(e) {
       if (e.preventDefault) e.preventDefault();
-      alert("no submit login");
+      var user = {
+        email: e.target.email.value,
+        password: e.target.password.value
+      }
+      if(!(user.email && user.password)){
+        swal(
+          'Fields cannot be empty.',
+          'Ensure all fields are filled.',
+          'error'
+        );
+        return false;
+      }
+      $.post( "users/login", user)
+        .always(function( data, status ) {
+          var json = data.responseJSON;
+          switch(status){
+            case "error":
+              var message = "Something went wrong. So wrong we don't know";
+              if (json && json.message){
+                message = json.message;
+              }
+              swal(
+                'Something went wrong.',
+                message,
+                'error'
+              );
+              break;
+            case "success":
+              auth.saveToken(data.token);
+              window.location.href = 'leaderboards';
+          }
+        });
       return false;
     }
     function processRegForm(e) {
@@ -92,13 +123,8 @@ block content
         return false;
       }
       if(user.password === confirmPass){
-        console.log(user);
-        console.log("ajax");
-        
         $.post( "users/new", user)
           .always(function( data, status ) {
-            console.log("lol");
-            console.log(status);
             var json = data.responseJSON;
             switch(status){
               case "error":
@@ -125,9 +151,5 @@ block content
           'error'
         );
       }
-      /*$.post( "users/new", { name: "John", time: "2pm" })
-        .done(function( data ) {
-          alert( "Data Loaded: " + data );
-        });*/
       return false;
     }

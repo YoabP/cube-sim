@@ -16,6 +16,39 @@ router.get('/',auth, function(req, res, next) {
         res.send(docs);
     });
 });
+router.get('/moves/:type', function(req, res, next){
+  var type = req.params.type;
+  db.user.find({ changesId : '1234' },
+      { limit : 10, sort : { time : 1 } }, // <-  here
+      function (err,res) {
+
+
+      });
+});
+
+router.get('/time/:type', function(req, res, next){
+  var type = req.params.type;
+  console.log(type);
+  var db = req.db;
+  var collection = db.get('scoresCollection');
+  collection.find(
+    {
+      "type": type
+      },
+      {
+        fields:{
+          "name": 1,
+          "time": 1,
+          "solve": 1
+        },
+        sort: {time : 1}
+      }, // <-  here
+      function (err,doc) {
+        console.log(err);
+        if (err) { res.status(404).json(err); return;}
+        res.json(doc);
+      });
+});
 
 /* POST to scores */
 router.post('/',auth, function(req, res) {
@@ -23,10 +56,10 @@ router.post('/',auth, function(req, res) {
     var db = req.db;
 
     // Get our form values. These rely on the "name" attributes
-    var userName = req.body.username;
+    var userName = req.body.name;
     var scramble = req.body.scramble;
     var solve = req.body.solve;
-    var time = req.body.time;
+    var time = parseInt(req.body.time);
     var type = req.body.type;
 
     // Set our collection
@@ -34,7 +67,7 @@ router.post('/',auth, function(req, res) {
 
     // Submit to the DB
     collection.insert({
-      "userName" : userName,
+      "name" : userName,
       "scramble" : scramble,
       "solve" : solve,
       "time" : time,
