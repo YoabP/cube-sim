@@ -15,6 +15,7 @@ router.get('/', function(req, res, next) {
 });
 
 //register
+//TODO validate duplicates
 router.post('/new', function(req, res, next){
   var db = req.db;
   var collection = db.get('usersCollection');
