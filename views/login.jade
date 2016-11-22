@@ -37,7 +37,10 @@ block content
                     .row
                       .col-sm-6.col-sm-offset-3
                         input#register-submit.form-control.btn.btn-register(type='submit', name='register-submit', tabindex='4', value='Register Now')
+  
   script(src='/modules/jquery/dist/jquery.min.js')
+  script(src='/modules/es6-promise/dist/es6-promise.auto.min.js')
+  script(src='/modules/sweetalert2/dist/sweetalert2.min.js')
   script.
     $(function() {
       $('#login-form-link').click(function(e) {
@@ -74,6 +77,57 @@ block content
     }
     function processRegForm(e) {
       if (e.preventDefault) e.preventDefault();
-      alert("no submit Reg");
+      var user = {
+        name: e.target.name.value,
+        email: e.target.email.value,
+        password: e.target.password.value
+      }
+      var confirmPass = e.target['confirm-password'].value;
+      if(!(user.name && user.email && user.password && confirmPass)){
+        swal(
+          'Fields cannot be empty.',
+          'Ensure all fields are filled.',
+          'error'
+        );
+        return false;
+      }
+      if(user.password === confirmPass){
+        console.log(user);
+        console.log("ajax");
+        
+        $.post( "users/new", user)
+          .always(function( data, status ) {
+            console.log("lol");
+            console.log(status);
+            var json = data.responseJSON;
+            switch(status){
+              case "error":
+                var message = "Something went wrong. So wrong we don't know";
+                if (json && json.message){
+                  message = json.message;
+                }
+                swal(
+                  'Something went wrong.',
+                  message,
+                  'error'
+                );
+                break;
+              case "success":
+                auth.saveToken(data.token);
+                window.location.href = 'leaderboards';
+            }
+          });
+      }
+      else{
+        swal(
+          'Passwords don\'t match',
+          'Ensure both fields are the same.',
+          'error'
+        );
+      }
+      /*$.post( "users/new", { name: "John", time: "2pm" })
+        .done(function( data ) {
+          alert( "Data Loaded: " + data );
+        });*/
       return false;
     }
