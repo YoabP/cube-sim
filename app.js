@@ -6,9 +6,16 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var passport = require('passport');
 var db = require("./config/db");
-
+var mongoose = require ('mongoose');
 require('./config/passport');
+var config = require ('./config')
 
+// Db connect
+mongoose.connect(config.mongoDB.uri, config.mongoDB.options);
+mongoose.connection.on('error', function(err){
+  console.log('MongoDB connection error: ' + err);
+  process.exit(-1);
+});
 //Route handlers
 var index = require('./routes/index');
 var users = require('./routes/users');
