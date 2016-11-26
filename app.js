@@ -5,17 +5,12 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var passport = require('passport');
-var db = require("./config/db");
-var mongoose = require ('mongoose');
-require('./config/passport');
-var config = require ('./config')
 
 // Db connect
-mongoose.connect(config.mongoDB.uri, config.mongoDB.options);
-mongoose.connection.on('error', function(err){
-  console.log('MongoDB connection error: ' + err);
-  process.exit(-1);
-});
+require('./config/db');
+
+//configure passport
+require('./config/passport');
 //Route handlers
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -35,11 +30,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Make our db accessible to our router
-app.use(function(req,res,next){
-    req.db = db;
-    next();
-});
 app.use(passport.initialize());
 
 app.use('/', index);

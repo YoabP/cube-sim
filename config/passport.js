@@ -1,8 +1,7 @@
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
-var crypto = require('crypto');
-var db = require('./db.js');
-var User = db.get('usersCollection');
+var mongoose = require('mongoose');
+var User = require('../db_models/user/user.model');
 
 passport.use(new LocalStrategy({
     usernameField: 'email'
@@ -17,7 +16,7 @@ passport.use(new LocalStrategy({
         });
       }
       // Return if password is wrong
-      if (!validPassword(password, user.passData)) {
+      if (!user.validPassword(password)) {
         return done(null, false, {
           message: 'Password is wrong'
         });
@@ -27,8 +26,3 @@ passport.use(new LocalStrategy({
     });
   }
 ));
-function validPassword(password, passData){
-  //var hash = crypto.pbkdf2Sync(password, passData.salt, 1000, 64, 'SHA1', (err, verify) => {}).toString('hex');
-  var hash = crypto.pbkdf2Sync(password, passData.salt, 1000, 64).toString('hex');
-  return passData.hash === hash;
-}
