@@ -1,47 +1,61 @@
 var express = require('express');
 var router = express.Router();
+var config = require('../config');
+var jwt = require('express-jwt');
+var auth = jwt({
+  secret: config.SECRET,
+  userProperty: 'payload'
+});
+var Solves = require('../db_models/solve/solve.controller');
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  var db = req.db;
-  var collection = db.get('scoresCollection');
-
-  collection.find({},{},function(e,docs){
-        res.send(docs);
-    });
+router.get('/',auth, function(req, res, next) {
+  Solves.index(req, res)
+  .then(function(result){
+    return res.status(200).json(result);
+  })
+  .catch(function(err){
+    handleError(res, err);
+  });
+});
+router.get('/moves/:type/:count',auth, function(req, res, next){
+  var type = req.params.type;   //puzzle type
+  var user = req.payload;       // user requesting
+  var count = parseInt(req.params.count); // amount of scores on top.
+  Solves.score(req, res, "Length", count, user.name, type)
+  .then(function(result){
+    return res.status(200).json(result);
+  })
+  .catch(function(err){
+    handleError(res, err);
+  });
+});
+router.get('/time/:type/:count',auth, function(req, res, next){
+  var type = req.params.type;   //puzzle type
+  var user = req.payload;       // user requesting
+  var count = parseInt(req.params.count); // amount of scores on top.
+  Solves.score(req, res, "Time", count, user.name, type)
+  .then(function(result){
+    return res.status(200).json(result);
+  })
+  .catch(function(err){
+    handleError(res, err);
+  });
 });
 
 /* POST to scores */
-router.post('/', function(req, res) {
-    // Set our internal DB variable
-    var db = req.db;
-
-    // Get our form values. These rely on the "name" attributes
-    var userName = req.body.username;
-    var scramble = req.body.scramble;
-    var solve = req.body.solve;
-    var time = req.body.time;
-    var type = req.body.type;
-
-    // Set our collection
-    var collection = db.get('scoresCollection');
-
-    // Submit to the DB
-    collection.insert({
-      "userName" : userName,
-      "scramble" : scramble,
-      "solve" : solve,
-      "time" : time,
-      "type" : type
-    }, function (err, doc) {
-        if (err) {
-            // If it failed, return error
-            res.send("There was a problem adding the information to the database.");
-        }
-        else {
-            // return insterted
-            res.send(doc);
-        }
+router.post('/',auth, function(req, res) {
+    req.body.Name = req.payload.name;
+    Solves.create(req,res)
+    .then(function(result){
+      return res.status(201).json(result);
+    })
+    .catch(function(err){
+      handleError(res, err);
     });
 });
 module.exports = router;
+
+function handleError(res, err) {
+  return res.status(500).send(err);
+}
