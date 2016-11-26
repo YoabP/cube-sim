@@ -1,6 +1,9 @@
-/**************************
-  DEFAULT BOOTSTRAP STYLES
-**************************/
+a {
+    text-decoration: none;
+    color: #abcada;
+    font-weight: 600;
+    cursor: pointer;
+}
 #timer {
   font-size: 18px;
   line-height: 1.33;

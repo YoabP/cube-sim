@@ -25,6 +25,11 @@ CUBES.Cube333.View = class View {
      */
     this.canRotate = true;
     /**
+     * Array of moves the view has executed.
+     * @type {string[]}
+     */
+    this.executedMoves = [];
+    /**
      * An object used to attach things into the visualization.
      * Also used for rotations.
      * @type {THREE.Object3D}
@@ -103,6 +108,7 @@ CUBES.Cube333.View = class View {
     face = move[0];
     CCW = move[1];
     if(!self.canRotate) return;
+    self.executedMoves.push(move);
     if(face === 'U' || face === 'D'||
        face === 'L' || face === 'R'||
        face === 'F' || face === 'B'){
