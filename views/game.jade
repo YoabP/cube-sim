@@ -103,11 +103,11 @@ html(lang='en')
       scramble.onclick = scrambleButton;
       scramble.innerHTML = "Scramble";
       menu.appendChild(scramble);
-      var solve = document.createElement('button');
-      solve.classList.add('btn', 'btn-primary', 'btn-lg', 'outline');
-      solve.onclick = solveButton;
-      solve.innerHTML = "Solve";
-      menu.appendChild(solve);
+      var reset = document.createElement('button');
+      reset.classList.add('btn', 'btn-primary', 'btn-lg', 'outline');
+      reset.onclick = resetButton;
+      reset.innerHTML = "Reset";
+      menu.appendChild(reset);
       timerHTML = document.createElement('div');
       timerHTML.id = 'timer';
       timer = new Timer();
@@ -142,8 +142,8 @@ html(lang='en')
       rubikView.root.add(rubikController.object3D);
       });
       }
-      function solveButton(){
-      console.log("SOLVE");
+      function resetButton(){
+      console.log("RESET");
       restore();
       scrambled = false;
       scramble = '';
