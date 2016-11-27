@@ -33,6 +33,13 @@ CUBES.Cube333.Controller = class Controller {
      */
     this.view = view;
     /**
+     * If it can currently rotate. Rotation will be
+     * disabled when the user is not meant to interact
+     * with the cube.
+     * @type {bool}
+     */
+    this.canRotate = true;
+    /**
      * Objects that will be detected by raycasting.
      * @type {THREE.Object3D[]}
      */
@@ -111,7 +118,7 @@ CUBES.Cube333.Controller = class Controller {
     if (sel && this.moveLister.start){
       this.moveLister.end = sel.name;
       var move = this.calculateMove(this.moveLister);
-      if (move){
+      if (move && this.canRotate){
         this.view.rotate(move);
       }
     }

@@ -28,6 +28,7 @@
     "easytimer": "^1.1.1",
     "express": "~4.14.0",
     "express-jwt": "^5.1.0",
+    "font-awesome": "^4.7.0",
     "jade": "~1.11.0",
     "jquery": "^3.1.1",
     "jsonwebtoken": "^7.1.9",

@@ -1,34 +1,85 @@
 extends loginLayout
+mixin dotRow(span)
+  tr 
+    td(colspan='#{span}').text-center 
+      i.fa.fa-circle
 
+mixin scoreTable(type, header, global)
+  div.panel.panel-default.background
+    table.table.foreground.table-striped
+      thead.bg-primary(class="#{type}-table")
+        tr
+          th #
+          th User
+          th= header 
+      tbody
+        for score, i in scores[global][type]
+          tr
+            th(scope='row')= i + 1
+            td= score._id
+            td= score.score
+        else
+          td(colspan='3').text-center Sorry, no scores for this puzzle.
+        if own[global][type]
+          +dotRow(3)
+          +dotRow(3)
+          +dotRow(3)
+          tr
+            th(scope='row')= own[global][type].pos + 1
+            td= own[global][type]._id
+            td= own[global][type].score
 block content
-  h1= title
-  p Welcome to #{title}
-  table.table
-    thead.thead-inverse
-      tr
-        th #
-        th First Name
-        th Last Name
-        th Username
-    tbody
-      tr
-        th(scope='row') 1
-        td Mark
-        td Otto
-        td @mdo
-      tr
-        th(scope='row') 2
-        td Jacob
-        td Thornton
-        td @fat
-      tr
-        th(scope='row') 3
-        td Larry
-        td the Bird
-        td @twitter
-      td(colspan='4').text-center ...
-      tr
-        th(scope='row') 3
-        td Larry
-        td the Bird
-        td @twitter
+  #wrapper
+      // Sidebar
+      #sidebar-wrapper
+        ul.sidebar-nav
+          li.sidebar-brand
+            a(href='/puzzle')
+              | Cube-Sim
+              i.fa.fa-cube
+          for array, category in puzzles
+            for puzzle in array
+              li
+                a(href='/leaderboards/#{puzzle.type}/#{user}')
+                  = category+' '+puzzle.name
+      // /#sidebar-wrapper
+      // Page Content
+      #page-content-wrapper
+        .container-fluid
+          .row
+            .col-lg-12
+              h1
+                i.fa.fa-trophy
+                = ' '+title
+          .row
+            .col-lg-12
+              h2
+                i.fa.fa-globe
+                = ' Global'
+          .row
+            .col-lg-6
+              +scoreTable("time","Seconds", "global")
+            .col-lg-6
+              +scoreTable("moves","Moves", "global")
+          .row
+            .col-lg-12
+              h2
+                i.fa.fa-users
+                = ' Friends'
+          .row
+            .col-lg-6
+              +scoreTable("time","Seconds", "friends")
+            .col-lg-6
+              +scoreTable("moves","Moves", "friends")
+      // /#page-content-wrapper
+    // /#wrapper
+  // jQuery
+  script(src='modules/jquery/dist/jquery.min.js')
+  // Bootstrap Core JavaScript
+  script(src='modules/bootstrap/dist/js/bootstrap.min.js')
+  script.
+    (function (){
+      if(auth.currentUser().name != '#{user}')
+        window.location.href = window.location.href.replace(/(.*\/).*/, '$1'+auth.currentUser().name);
+    })()
+              

@@ -7,19 +7,14 @@ html(lang='en')
     link(rel='stylesheet', href='/modules/bootstrap/dist/css/bootstrap.css')
     link(rel='stylesheet', type='text/css', href='/modules/sweetalert2/dist/sweetalert2.min.css')
     link(rel='stylesheet', type='text/css', href='/stylesheets/cubeSim.css', media='screen')
-    style.
-      body {
-      font-family: Monospace;
-      background-color: #f0f0f0;
-      margin: 0px;
-      overflow: hidden;
-      }
-  body
+    link(rel='stylesheet', type='text/css', href='/modules/font-awesome/css/font-awesome.min.css')
+  
+  body.background
     script(src='/js/auth.js')
     script.
       (function (){
         if(!auth.isLoggedIn())
-          window.location.href = "login";
+          window.location.href = "/login";
       })()
       
     block content

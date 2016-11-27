@@ -31,15 +31,34 @@ exports.score= function(req, res, column, count, user, type){
         resolve(result);
       }
       else{
-        //Get own user max score
-        Solve.findOne()
-        .where('Name').equals(user)
-        .sort(column)
-        .select('Name '+column)
+        //Get max scores
+        Solve.aggregate()
+        .match({Type: type})
+        .group({
+          _id: '$Name',  //user name
+          score: {$min: '$'+column}
+            })
+        .sort("score")
+        .group({
+          _id: null,
+          score: { $push :'$$CURRENT'}
+        })
+        .unwind({
+          path: '$score',
+          includeArrayIndex: 'pos',
+        })
+        .match({ 'score._id': user })
         .exec(function(err, usrSolve){
           if(err) { reject(err); }
           //Check if own score is already in leaderboard
-          result = {scores: docs, own: (alreadyOnLeaderboard? undefined : usrSolve)};
+          usrSolve = usrSolve[0];
+          var own;
+          if(usrSolve){
+            own = usrSolve.score;
+            if(own)
+            own.pos = usrSolve.pos;
+          }
+          result = {scores: docs, own: own};
           resolve(result);
         });
       }

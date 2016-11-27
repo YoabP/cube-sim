@@ -14,6 +14,8 @@ html(lang='en')
       overflow: hidden;
       }
   body
+    script(src='/js/auth.js')
+    script(src='/modules/jquery/dist/jquery.min.js')
     script(src='/modules/es6-promise/dist/es6-promise.auto.min.js')
     script(src='/modules/sweetalert2/dist/sweetalert2.min.js')
     script(src='/modules/easytimer/dist/easytimer.min.js')
@@ -35,10 +37,16 @@ html(lang='en')
     script(src='/js/cube-sim/333/cube333Visual.js')
     script(src='/js/cube-sim/333/cube333Controller.js')
     script.
+      (function (){
+        if(!auth.isLoggedIn())
+          window.location.href = "login";
+      })()
       var container, timer, timerHTML;
       var scrambled = false;
       var camera, controls, scene, renderer;
       var rubik, rubikView, rubikController;
+      
+      var scramble;
       init("#{type}");
       animate();
       function init(type) {
@@ -138,11 +146,13 @@ html(lang='en')
       console.log("SOLVE");
       restore();
       scrambled = false;
+      scramble = '';
       timerHTML.innerHTML = "";
       timer.stop();
       }
       function scrambleButton(){
       console.log("SCRAMBLE");
+      rubikController.canRotate = false;
       var moves =['U','D','L','R','F','B'];
       var algorithm = '';
       for (var i = 0; i < 30; i++) {
@@ -150,11 +160,14 @@ html(lang='en')
       algorithm+=moves[index] + ' ';
       }
       algorithm = algorithm.slice(0, -1); //remove last space
+      scramble = algorithm;
       rubikView.algorithm(algorithm, 30).then(function(){
       console.log("DONE");
       scrambled = true;
       timer.start({precision: 'secondTenths', callback: updateTimer});
-      })
+      rubikView.executedMoves = []; //scramble moves not in solution.
+      rubikController.canRotate = true;
+      });
       }
       function updateTimer(values) {
       timerHTML.innerHTML = values.toString(['hours', 'minutes', 'seconds', 'secondTenths']);
@@ -163,6 +176,8 @@ html(lang='en')
       if(scrambled && rubik.isSolved()){
       if(!timer.isRunning()) return;
       scrambled = false;
+      timer.pause();
+      var seconds = timer.getTotalTimeValues().secondTenths/10;
       var time = timer.getTimeValues().toString(['hours', 'minutes', 'seconds', 'secondTenths']);
       timer.stop();
       swal({
@@ -170,6 +185,50 @@ html(lang='en')
       text: "Your solve: "+ time,
       type: "success",
       confirmButtonText: "Cool"
+      })
+      .then(function(){
+        //Send score to API
+        var solve = {
+          Name: auth.currentUser().name,
+          Time: seconds,
+          Moves: rubikView.executedMoves.join(' '),
+          Length: rubikView.executedMoves.length,
+          Scramble: scramble,
+          Type: rubik.type,
+        }
+        console.log(solve);
+        $.ajax({
+          url: '/scores',
+          type: 'post',
+          data: solve,
+          headers: {Authorization: 'Bearer '+auth.getToken()},
+          dataType: 'json'
+        })
+        .done(function(data){
+          var hostname = window.location.hostname;
+          var port = window.location.port;
+          var protocol = window.location.protocol;
+          var replayURI = `${protocol}//${hostname}${port?':'+port:''}/replay/${data._id}`;
+          swal({
+            title: "Solve saved!",
+            html: `${data.Name}'s solve saved.<br>
+            You can view the replay <a href="${replayURI}">here</a>!`,
+            type: "success",
+            confirmButtonText: "Ok"
+          });
+        })
+        .fail(function(data){
+          var message = "Stuff failed!"
+          if(data.responseJSON && data.responseJSON.message){
+            message += `\n ${data.responseJSON.message}`;
+          }
+          swal({
+            title: "Couldn't Save Solve!",
+            text: message, 
+            type: "error",
+            confirmButtonText: "Ok"
+          });
+        });
       });
       }
       }
