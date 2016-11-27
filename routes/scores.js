@@ -45,7 +45,7 @@ router.get('/time/:type/:count',auth, function(req, res, next){
 
 /* POST to scores */
 router.post('/',auth, function(req, res) {
-    req.body.Name = req.payload.name;
+    //req.body.Name = req.payload.name;
     Solves.create(req,res)
     .then(function(result){
       return res.status(201).json(result);

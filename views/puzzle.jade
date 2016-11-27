@@ -1,6 +1,32 @@
-extends layout
+extends loginLayout
+
+mixin puzzleCard(puzzle)
+  .thumbnail
+    img(src='/images/#{puzzle.type}.jpg').img-rounded
+    .caption
+      h3= puzzle.name
+      p
+        a.btn-primary.btn-sm(href="/puzzle/play/#{puzzle.type}", role ="button") Play
+        a.btn-default.btn-sm(href="/leaderboards/#{puzzle.type}/n", role="button")  Scores
+  //- div
+  //-   h1= puzzle.name
+  //-   img.img-responsive.img-thumbnail(src='/images/#{puzzle.type}.jpg')
 
 block content
-  h1= title
-  p Welcome to #{title}
-  p testing stuff
+  - var pu = {name: "333 classic", type: "Cube333"}
+  .container
+    .row
+      .col-lg-12
+        h1= title
+        p Select a puzzle to play. Have fun!
+    .row
+      .col-lg-12
+        for array, category in puzzles
+          h2= category
+          .row
+            .col-lg-12.text-center
+              ul.list-inline
+                for puzzle in array
+                  li
+                    - var puz = {name: puzzle.name, type: puzzle.type}
+                    +puzzleCard(puz)
