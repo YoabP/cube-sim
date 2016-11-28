@@ -42,7 +42,7 @@ CUBES.Cube333.Model = class Model {
 
     /**
      * Type of puzzle.
-     * @type {string}    
+     * @type {string}
      */
     this.type = "Cube333";
     /**
@@ -183,6 +183,11 @@ CUBES.Cube333.Model = class Model {
       if(this.sockets[i] == null) continue;
       if(!this.sockets[i].isPositioned()) return false;
       if(!this.sockets[i].isOriented()) return false;
+    }
+    for (var center in this.centers) {
+      if (this.centers.hasOwnProperty(center)) {
+        if(!this.centers[center].piece.isOriented()) return false;
+      }
     }
     return true;
   }
