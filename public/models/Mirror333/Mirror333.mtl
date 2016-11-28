@@ -1,7 +1,7 @@
 # 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
-# File Created: 24.10.2016 04:21:07
+# File Created: 27.11.2016 11:47:47
 
-newmtl rubik_mat
+newmtl Material__0
 	Ns 10.0000
 	Ni 1.5000
 	d 1.0000
@@ -12,5 +12,5 @@ newmtl rubik_mat
 	Kd 0.5880 0.5880 0.5880
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
-	map_Ka 333_tex.dds
-	map_Kd 333_tex.dds
+	map_Ka Mirror333_tex.dds
+	map_Kd Mirror333_tex.dds

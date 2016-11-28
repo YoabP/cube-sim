@@ -33,9 +33,13 @@ html(lang='en')
     script(src='/js/cube-sim/corner.js')
     script(src='/js/cube-sim/edge.js')
     script(src='/js/cube-sim/coloredCube.js')
-    script(src='/js/cube-sim/333/cube333.js')
-    script(src='/js/cube-sim/333/cube333Visual.js')
-    script(src='/js/cube-sim/333/cube333Controller.js')
+    if type === 'Mirror333'
+      script(src='/js/cube-sim/Cube333/cube333.js')
+      script(src='/js/cube-sim/Cube333/cube333Visual.js')
+      script(src='/js/cube-sim/Cube333/cube333Controller.js')
+    script(src='/js/cube-sim/#{type}/#{type.toLowerCase()}.js')
+    script(src='/js/cube-sim/#{type}/#{type.toLowerCase()}Visual.js')
+    script(src='/js/cube-sim/#{type}/#{type.toLowerCase()}Controller.js')
     script.
       (function (){
         if(!auth.isLoggedIn())
