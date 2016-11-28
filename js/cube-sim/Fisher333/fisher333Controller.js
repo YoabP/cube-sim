@@ -5,5 +5,5 @@
  * @class
  * @extends {CUBES.Cube333.Controller}
  */
-CUBES.Mirror333.Controller = class Controller extends CUBES.Cube333.Controller{
+CUBES.Fisher333.Controller = class Controller extends CUBES.Cube333.Controller{
 }

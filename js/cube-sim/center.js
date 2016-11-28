@@ -79,7 +79,7 @@ CUBES.Center = class Center extends CUBES.Piece{
         this.sockets[depth][0].piece = startingPiece;
       }
     }
-    this.orientation.rotate(CCW);
+    this.piece.orientation.rotate(CCW);
   }
   /**
    * Print socket matrix for debugging purposes.

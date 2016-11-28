@@ -23,9 +23,10 @@ CUBES.Socket = class Socket {
     /**
      * Piece that should be in socket.
      * The piece which was originally in this place.
-     * @type {CUBES.Piece}
+     * @type {CUBES.Piece[]}
      */
-    this.originalPiece = args.piece? args.piece : null;
+    this.originalPiece = [];
+    if(args.piece) this.originalPiece.push(args.piece);
   }
 
   /**
@@ -36,16 +37,27 @@ CUBES.Socket = class Socket {
    */
   setPiece(piece){
     this.piece = piece;
-    this.originalPiece = piece;
+    this.originalPiece = [];
+    if(piece) this.originalPiece.push(piece);
   }
 
+  /**
+   * Sets an array of pieces as the possible original piece.
+   * This works for pieces that could occupy different spaces.
+   * For example a master morphinx same colored edges.
+   *
+   * @param  {CUBES.Piece[]} pieces - Array of pieces valid for this socket.
+   */
+  setPosibleOriginal(pieces){
+    if (pieces) this.originalPiece = pieces;
+  }
   /**
    * Check if the current piece in the socket is in
    * the correct position.
    * @return {bool}  true if positioned, false otherwise.
    */
   isPositioned(){
-    return this.piece === this.originalPiece;
+    return this.originalPiece.indexOf(this.piece) !== -1;
   }
 
   /**
