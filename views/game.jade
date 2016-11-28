@@ -137,46 +137,50 @@ html(lang='en')
       renderer.render( scene, camera );
       }
       function restore(){
-      scene.remove(rubik.object3D);
-      scene.remove(rubikView.object3D);
-      rubik = new CUBES[rubik.type].Model();
-      rubikView = new CUBES[rubik.type].View(rubik,scene);
-      rubik.initRenderer();
-      rubikView.loaded.then(function(){
-      rubikController.view = rubikView;
-      rubikView.root.add(rubikController.object3D);
-      });
+        scene.remove(rubik.object3D);
+        scene.remove(rubikView.object3D);
+        rubik = new CUBES[rubik.type].Model();
+        rubikView = new CUBES[rubik.type].View(rubik,scene);
+        rubik.initRenderer();
+        rubikView.loaded.then(function(){
+          rubikController.view = rubikView;
+          rubikView.root.add(rubikController.object3D);
+        });
+      return Promise.all([rubikView.loaded, rubikController.loaded]);
       }
       function resetButton(){
-      console.log("RESET");
-      restore();
-      scrambled = false;
-      scramble = '';
-      timerHTML.innerHTML = "";
-      timer.stop();
+        console.log("RESET");
+        scrambled = false;
+        scramble = '';
+        timerHTML.innerHTML = "";
+        timer.stop();
+        restore();
       }
       function scrambleButton(){
         if(scrambled) return;
-      console.log("SCRAMBLE");
-      rubikController.canRotate = false;
-      var moves =['U','D','L','R','F','B'];
-      var algorithm = '';
-      for (var i = 0; i < 30; i++) {
-      var index = Math.getRandomIntInclusive(0,moves.length-1);
-      algorithm+=moves[index] + ' ';
-      }
-      algorithm = algorithm.slice(0, -1); //remove last space
-      scramble = algorithm;
-      rubikView.algorithm(algorithm, 30).then(function(){
-      console.log("DONE");
-      scrambled = true;
-      timer.start({precision: 'secondTenths', callback: updateTimer});
-      rubikView.executedMoves = []; //scramble moves not in solution.
-      rubikController.canRotate = true;
-      });
-      }
+        //Reset before scramble, so scramble is saved correctly
+        restore().then(function(){
+          console.log("SCRAMBLE");
+          rubikController.canRotate = false;
+          var moves =['U','D','L','R','F','B'];
+          var algorithm = '';
+          for (var i = 0; i < 30; i++) {
+            var index = Math.getRandomIntInclusive(0,moves.length-1);
+            algorithm+=moves[index] + ' ';
+          }
+          algorithm = algorithm.slice(0, -1); //remove last space
+          scramble = algorithm;
+          rubikView.algorithm(algorithm, 30).then(function(){
+            console.log("DONE");
+            scrambled = true;
+            timer.start({precision: 'secondTenths', callback: updateTimer});
+            rubikView.executedMoves = []; //scramble moves not in solution.
+            rubikController.canRotate = true;
+          });
+        });
+      } 
       function updateTimer(values) {
-      timerHTML.innerHTML = values.toString(['hours', 'minutes', 'seconds', 'secondTenths']);
+        timerHTML.innerHTML = values.toString(['hours', 'minutes', 'seconds', 'secondTenths']);
       }
       function checkForSolve(){
       if(scrambled && rubik.isSolved()){
