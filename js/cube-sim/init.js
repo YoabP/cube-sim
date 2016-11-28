@@ -82,3 +82,23 @@ CUBES.vectorToFace = function vectorToFace(v){
   if( v.z == 1)  {return "F";}
   if( v.z == -1) {return "B";}
 }
+
+// Rotate an object around an axis in object space
+CUBES.rotateAroundObjectAxis = function rotateAroundObjectAxis( object, axis, radians ) {
+
+    var rotationMatrix = new THREE.Matrix4();
+
+    rotationMatrix.setRotationAxis( axis.normalize(), radians );
+    object.matrix.multiplySelf( rotationMatrix );                       // post-multiply
+    object.rotation.setRotationFromMatrix( object.matrix );
+}
+
+// Rotate an object around an axis in world space (the axis passes through the object's position)
+CUBES.rotateAroundWorldAxis = function rotateAroundWorldAxis( object, axis, radians ) {
+
+    var rotationMatrix = new THREE.Matrix4();
+    rotationMatrix.makeRotationAxis(axis.normalize(), radians);
+    rotationMatrix.multiply( object.matrix );                       // pre-multiply
+    object.matrix = rotationMatrix;
+    object.rotation.setRotationFromMatrix( object.matrix );
+}

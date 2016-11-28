@@ -30,10 +30,14 @@ CUBES.Square1.View = class View {
     this.executedMoves = [];
     /**
      * An object used to attach things into the visualization.
-     * Also used for rotations.
      * @type {THREE.Object3D}
      */
     this.root = new THREE.Object3D();
+    /**
+     * An object used for rotations.
+     * @type {THREE.Object3D}
+     */
+    this.rootRotation = new THREE.Object3D();
     /**
      * The root of the visualization object 3D.
      * Not to be confused with [root]{@linkcode CUBES.Square1.View#root}.
@@ -52,6 +56,7 @@ CUBES.Square1.View = class View {
         CUBES.Square1.View.bind(model,rubik);
         self.object3D = model;
         self.object3D.add(self.root);
+        self.object3D.add(self.rootRotation);
         scene.add(self.object3D);
         resolve(true);
       });
@@ -108,9 +113,7 @@ CUBES.Square1.View = class View {
     CCW = move[1];
     if(!self.canRotate) return;
     self.executedMoves.push(move);
-    if(face === 'U' || face === 'D'||
-       face === 'L' || face === 'R'||
-       face === 'F' || face === 'B'){
+    if(face === 'U' || face === 'D'){
       return new Promise(function(resolve,reject){
         self.canRotate = false;
         self._rotateFaces(face,CCW, ms).then(function(){
@@ -122,7 +125,7 @@ CUBES.Square1.View = class View {
     else{
       return new Promise(function(resolve,reject){
         self.canRotate = false;
-        self._rotateSlices(face,CCW, ms).then(function(){
+        self._rotateVertical(face,CCW, ms).then(function(){
           self.canRotate = true;
           resolve();
         });
@@ -141,7 +144,7 @@ CUBES.Square1.View = class View {
     var self = this;
     return new Promise(function(resolve, reject){
       var center = self.logic.getSocket(face);
-      var obj = self.root;
+      var obj = self.rootRotation;
       obj.updateMatrixWorld();
       self.object3D.updateMatrixWorld();
       var attachedAlready = [];
@@ -174,7 +177,7 @@ CUBES.Square1.View = class View {
 
       tween.onComplete(function(){
         var center = self.logic.getSocket(face);
-        var obj = self.root;
+        var obj = self.rootRotation;
         obj.updateMatrixWorld();
         self.object3D.updateMatrixWorld();
         var attachedAlready = [];
@@ -202,63 +205,65 @@ CUBES.Square1.View = class View {
    * @param  {number} ms   - miliseconds the animation should take.
    * @return {Promise} Promise that resolves when animation finishes.
    */
-  _rotateSlices(slice, CCW, ms){
+  _rotateVertical(slice, CCW, ms){
     var self = this;
     var rotation,target;
     var axis, moveA, moveB;
     var sliceSockets;
     var direction; //clockwise direction
-    switch (slice) {
-      case 'M':
-        axis = 'X';
-        sliceSockets = self.logic.getSockets(["F","UF","U","UB","B","BD","D","DF"]);
+    switch (slice){
+      case 'R':
+        axis = new THREE.Vector3(3.3, 0, -1);
+        sliceSockets = self.logic.getSockets(
+          ["UB","UBR0","UBR1","UR","UFR0","UFR1","DFR0","DFR1","DR","DBR0","DBR1","DB", "R"]);
         direction = 1;
-        moveA = 'R' + (CCW?'*': '');
-        moveB = 'L' + (CCW? '':'*');
-        break;
-      case 'E':
-        axis = 'Y';
-        sliceSockets = self.logic.getSockets(["F","FR","R","RB","B","BL","L","LF"]);
-        direction = 1;
-        moveA = 'U' + (CCW?'*': '');
-        moveB = 'D' + (CCW? '':'*');
-        break;
-      case 'S':
-        axis = 'Z';
-        sliceSockets = self.logic.getSockets(["R","RU","U","UL","L","LD","D","DR"]);
-        direction = -1;
-        moveA = 'B' + (CCW?'*': '');
-        moveB = 'F' + (CCW? '':'*');
-        break;
+      case 'L':
     }
-    //Rotation must be additive, not absolute
+    self.rootRotation.rotation.x = 0;
+    self.rootRotation.rotation.y = 0;
+    self.rootRotation.rotation.z = 0;
     rotation = { ms: 0};
     target = { ms: ms};
-    var totalRotation = Math.toRadians(90)*(CCW? -direction:direction);
+
+    var totalRotation = Math.toRadians(180)*(CCW? -direction:direction);
+
     var step = totalRotation/ms;
     var prevMs = 0;
     return new Promise(function(resolve,reject){
-        var obj = self.root;
+        var center = self.logic.getSocket('R');
+        var obj = self.rootRotation;
         obj.updateMatrixWorld();
         self.object3D.updateMatrixWorld();
-        sliceSockets.forEach(function(socket, index){
-          THREE.SceneUtils.attach( socket.piece.cubie, socket.piece.cubie.parent, obj );
+        var attachedAlready = [];
+        center.sockets[0].forEach(function(socket, index){
+          if(attachedAlready.indexOf(socket.piece.cubie) == -1){
+            THREE.SceneUtils.attach( socket.piece.cubie, socket.piece.cubie.parent, obj );
+            attachedAlready.push(socket.piece.cubie);
+          }
+
         });
         var tween = new TWEEN.Tween(rotation).to(target, ms);
         tween.onUpdate(function(){
             var delta = (rotation.ms - prevMs);
             prevMs = rotation.ms;
-            self.root["rotate"+axis](delta*step );
+            self.rootRotation.rotateOnAxis(axis.normalize(), delta*step);
+            //CUBES.rotateAroundWorldAxis(self.rootRotation, axis, delta*step);
+            //self.root["rotate"+axis](delta*step );
         });
         tween.onComplete(function(){
-          var obj = self.root;
+          var center = self.logic.getSocket('R');
+          var obj = self.rootRotation;
           obj.updateMatrixWorld();
           self.object3D.updateMatrixWorld();
-          sliceSockets.forEach(function(socket, index){
-            THREE.SceneUtils.detach( socket.piece.cubie, obj, self.object3D );
+          var attachedAlready = [];
+          center.sockets[0].forEach(function(socket, index){
+            if(attachedAlready.indexOf(socket.piece.cubie) == -1){
+              THREE.SceneUtils.detach( socket.piece.cubie, obj, self.object3D );
+              attachedAlready.push(socket.piece.cubie);
+            }
           });
-          self.logic.rotate(moveA);
-          self.logic.rotate(moveB);
+          //Only face that actually spins is the R face.
+          self.logic.rotate('R'+(CCW?'*':''));
           resolve();
         });
         tween.start();

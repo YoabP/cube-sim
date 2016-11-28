@@ -91,7 +91,7 @@ CUBES.Center = class Center extends CUBES.Piece{
       var len = this.sockets[i].length;
       str = '[';
       this.sockets[i].forEach(function(elem, index){
-        str += elem.piece + (index == len-1?'':',');
+        str += elem.piece.cubie.name + (index == len-1?'':',');
       });
       str+=']';
     }
