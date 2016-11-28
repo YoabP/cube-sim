@@ -156,6 +156,7 @@ html(lang='en')
       timer.stop();
       }
       function scrambleButton(){
+        if(scrambled) return;
       console.log("SCRAMBLE");
       rubikController.canRotate = false;
       var moves =['U','D','L','R','F','B'];
