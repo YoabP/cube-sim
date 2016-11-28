@@ -130,6 +130,7 @@ CUBES.Cube333.Controller = class Controller {
    * @return {Promise}  Promise resolved when load finishes.
    */
   loadModel(){
+    var self = this;
     var materials = {
       U: new THREE.MeshPhongMaterial( {color: CUBES.Colors.W} ),
       D: new THREE.MeshPhongMaterial( {color: CUBES.Colors.Y} ),
@@ -147,8 +148,8 @@ CUBES.Cube333.Controller = class Controller {
     var onError = function ( xhr ) { };
     return new Promise(function(resolve, reject) {
         var objLoader = new THREE.OBJLoader();
-        objLoader.setPath( '/models/333/' );
-        objLoader.load( '333_hitbox.obj', function ( object ) {
+        objLoader.setPath( `/models/${self.view.logic.type}/` );
+        objLoader.load( `${self.view.logic.type}_hitbox.obj`, function ( object ) {
           object.children.forEach(function(child, index){
             var face = child.name[0];
             child.material = materials[face];

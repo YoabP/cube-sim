@@ -279,6 +279,7 @@ CUBES.Cube333.View = class View {
    * @return {Promise}  Promise resolved when load finishes.
    */
   loadModel(){
+    var self = this;
     var onProgress = function ( xhr ) {
       if ( xhr.lengthComputable ) {
         var percentComplete = xhr.loaded / xhr.total * 100;
@@ -288,14 +289,14 @@ CUBES.Cube333.View = class View {
     var onError = function ( xhr ) { };
     THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader() );
     var mtlLoader = new THREE.MTLLoader();
-    mtlLoader.setPath( '/models/333/' );
+    mtlLoader.setPath( `/models/${self.logic.type}/` );
     return new Promise(function(resolve, reject) {
-      mtlLoader.load( '333.mtl', function( materials ) {
+      mtlLoader.load( `${self.logic.type}.mtl`, function( materials ) {
         materials.preload();
         var objLoader = new THREE.OBJLoader();
         objLoader.setMaterials( materials );
-        objLoader.setPath( '/models/333/' );
-        objLoader.load( '333.obj', function ( object ) {
+        objLoader.setPath( `/models/${self.logic.type}/` );
+        objLoader.load( `${self.logic.type}.obj`, function ( object ) {
           resolve(object);
         }, onProgress, onError );
       });
