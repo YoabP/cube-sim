@@ -306,13 +306,13 @@ CUBES.Square1.Model = class Model {
         return this.centers[faces[0]];
         break;
       case 2://Edge
-        var i = CUBES.Cube333.pieceSocketMap[y][z][x];
+        var i = CUBES.Square1.pieceSocketMap[y][z][x];
         return this.sockets[i];
         break;
       case 4://Corner, but has number 0|1, to identify wich socket
-        var i = CUBES.Cube333.pieceSocketMap[y][z][x];
         var offset= faces[3];
-        return this.sockets[i][offset];
+        var i = CUBES.Square1.pieceSocketMap[y][z][x][offset];
+        return this.sockets[i];
         break;
     }
   }
@@ -326,12 +326,12 @@ CUBES.Square1.Model = class Model {
  */
 CUBES.Square1.pieceSocketMap = [];
 // Corner pieces are divided in two sockets
-CUBES.Cube333.pieceSocketMap[2] = [[[11,0], 1 ,[2,3]],
+CUBES.Square1.pieceSocketMap[2] = [[[11,0], 1 ,[2,3]],
                                    [  10  ,'c',  4  ],
                                    [[9,8] , 7 ,[6,5]]];
-CUBES.Cube333.pieceSocketMap[1] = [[ null, null, null ],
+CUBES.Square1.pieceSocketMap[1] = [[ null, null, null ],
                                    [ null, null,  'c'],
                                    [ null, null, null]];
-CUBES.Cube333.pieceSocketMap[0] = [[[23,12], 13, [14,15]],
+CUBES.Square1.pieceSocketMap[0] = [[[23,12], 13, [14,15]],
                                    [22     ,'c',   16   ],
                                    [[21,20], 19, [18,17]]];
