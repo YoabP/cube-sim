@@ -11,6 +11,15 @@ exports.index = function(req, res) {
     });
   });
 };
+//get one solve by id
+exports.find = function (req, res){
+  return new Promise(function(resolve, reject){
+    Solve.findById(req.params.id, function (err, solve) {
+        if(err) { return reject(err) }
+        resolve(solve);
+    });
+  });
+}
 //get leaderboards, plus the user position.
 exports.score= function(req, res, column, count, user, type){
   return new Promise(function (resolve, reject){

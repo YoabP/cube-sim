@@ -42,11 +42,7 @@ html(lang='en')
     script(src='/js/cube-sim/#{type}/#{type.toLowerCase()}Visual.js')
     script(src='/js/cube-sim/#{type}/#{type.toLowerCase()}Controller.js')
     script.
-      (function (){
-        if(!auth.isLoggedIn())
-          window.location.href = "/login";
-      })()
-      var container, timer, timerHTML;
+      var container;
       var scrambled = false;
       var camera, controls, scene, renderer;
       var rubik, rubikView, rubikController;
@@ -85,9 +81,10 @@ html(lang='en')
       rubikView.loaded.then(function(){//(camera, controls, scene, view)
       rubikController = new CUBES[type].Controller(camera, controls, rubikView);
       rubikController.loaded.then(function(){
-      renderer.domElement.addEventListener( 'mousemove', function(event){rubikController.onDocumentMouseMove(event);}, false );
-      renderer.domElement.addEventListener( 'mousedown', function(event){rubikController.onDocumentMouseDown(event);}, false );
-      renderer.domElement.addEventListener( 'mouseup', function(event){rubikController.onDocumentMouseUp(event);}, false );
+        rubikController.canRotate = false;
+        renderer.domElement.addEventListener( 'mousemove', function(event){rubikController.onDocumentMouseMove(event);}, false );
+        renderer.domElement.addEventListener( 'mousedown', function(event){rubikController.onDocumentMouseDown(event);}, false );
+        renderer.domElement.addEventListener( 'mouseup', function(event){rubikController.onDocumentMouseUp(event);}, false );
       });
       });
       renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -103,20 +100,12 @@ html(lang='en')
       menu.style.top = '10px';
       menu.style.width = '100%';
       menu.style.textAlign = 'center';
-      var scramble = document.createElement('button');
-      scramble.classList.add('btn', 'btn-primary', 'btn-lg', 'outline');
-      scramble.onclick = scrambleButton;
-      scramble.innerHTML = "Scramble";
-      menu.appendChild(scramble);
-      var reset = document.createElement('button');
-      reset.classList.add('btn', 'btn-primary', 'btn-lg', 'outline');
-      reset.onclick = resetButton;
-      reset.innerHTML = "Reset";
-      menu.appendChild(reset);
-      timerHTML = document.createElement('div');
-      timerHTML.id = 'timer';
-      timer = new Timer();
-      menu.appendChild(timerHTML);
+      var play = document.createElement('button');
+      play.classList.add('btn', 'btn-primary', 'btn-lg', 'outline');
+      play.onclick = playButton;
+      play.innerHTML = "Play";
+      menu.appendChild(play);
+      
       container.appendChild(menu);
       window.addEventListener( 'resize', onWindowResize, false );
       }
@@ -133,7 +122,6 @@ html(lang='en')
       controls.update();
       TWEEN.update();
       rubik.updateRenderer();
-      checkForSolve();
       renderer.render( scene, camera );
       }
       function restore(){
@@ -148,97 +136,19 @@ html(lang='en')
         });
       return Promise.all([rubikView.loaded, rubikController.loaded]);
       }
-      function resetButton(){
-        console.log("RESET");
-        scrambled = false;
-        scramble = '';
-        timerHTML.innerHTML = "";
-        timer.stop();
-        restore();
-      }
-      function scrambleButton(){
+      function playButton(){
         if(scrambled) return;
         //Reset before scramble, so scramble is saved correctly
         restore().then(function(){
-          console.log("SCRAMBLE");
-          rubikController.canRotate = false;
-          var moves =['U','D','L','R','F','B'];
-          var algorithm = '';
-          for (var i = 0; i < 30; i++) {
-            var index = Math.getRandomIntInclusive(0,moves.length-1);
-            algorithm+=moves[index] + ' ';
-          }
-          algorithm = algorithm.slice(0, -1); //remove last space
-          scramble = algorithm;
-          rubikView.algorithm(algorithm, 30).then(function(){
-            console.log("DONE");
+          var algorithm = "#{Scramble}";
+          var ms = parseFloat("#{Time}") * 1000;
+          var moveMs = ms/parseInt("#{Length}");
+          var solveAlg = "#{Moves}";
+          rubikView.algorithm(algorithm, 1).then(function(){
             scrambled = true;
-            timer.start({precision: 'secondTenths', callback: updateTimer});
-            rubikView.executedMoves = []; //scramble moves not in solution.
-            rubikController.canRotate = true;
+            rubikView.algorithm(solveAlg, moveMs).then(function(){
+              scrambled = false;
+              });
           });
         });
       } 
-      function updateTimer(values) {
-        timerHTML.innerHTML = values.toString(['hours', 'minutes', 'seconds', 'secondTenths']);
-      }
-      function checkForSolve(){
-      if(scrambled && rubik.isSolved()){
-      if(!timer.isRunning()) return;
-      scrambled = false;
-      timer.pause();
-      var seconds = timer.getTotalTimeValues().secondTenths/10;
-      var time = timer.getTimeValues().toString(['hours', 'minutes', 'seconds', 'secondTenths']);
-      timer.stop();
-      swal({
-      title: "Well Done!",
-      text: "Your solve: "+ time,
-      type: "success",
-      confirmButtonText: "Cool"
-      })
-      .then(function(){
-        //Send score to API
-        var solve = {
-          Name: auth.currentUser().name,
-          Time: seconds,
-          Moves: rubikView.executedMoves.join(' '),
-          Length: rubikView.executedMoves.length,
-          Scramble: scramble,
-          Type: rubik.type,
-        }
-        console.log(solve);
-        $.ajax({
-          url: '/scores',
-          type: 'post',
-          data: solve,
-          headers: {Authorization: 'Bearer '+auth.getToken()},
-          dataType: 'json'
-        })
-        .done(function(data){
-          var hostname = window.location.hostname;
-          var port = window.location.port;
-          var protocol = window.location.protocol;
-          var replayURI = `${protocol}//${hostname}${port?':'+port:''}/replay/${data._id}`;
-          swal({
-            title: "Solve saved!",
-            html: `${data.Name}'s solve saved.<br>
-            You can view the replay <a href="${replayURI}">here</a>!`,
-            type: "success",
-            confirmButtonText: "Ok"
-          });
-        })
-        .fail(function(data){
-          var message = "Stuff failed!"
-          if(data.responseJSON && data.responseJSON.message){
-            message += `\n ${data.responseJSON.message}`;
-          }
-          swal({
-            title: "Couldn't Save Solve!",
-            text: message, 
-            type: "error",
-            confirmButtonText: "Ok"
-          });
-        });
-      });
-      }
-      }
