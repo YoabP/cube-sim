@@ -16,6 +16,25 @@ router.get('/', function(req, res, next) {
 router.get('/login', function(req, res, next) {
   res.render('login', { title: 'LogIn' });
 });
+
+router.get('/replay/:id', function(req, res, next) {
+  Solves.find(req, res)
+  .then(function(solve){
+    if(!solve) return res.status(404).send('Not Found');
+    var locals ={
+      title: "Replay",
+      Time: solve.Time,
+      Scramble: solve.Scramble,
+      Moves: solve.Moves,
+      Length: solve.Length,
+      type: solve.Type
+    };
+    res.render('replay', locals);
+  })
+  .catch(function(err){
+    handleError(res, err);
+  });
+});
 router.get('/leaderboards/:type/:user', function(req, res, next) {
   var type = req.params.type;   //puzzle type
   var user = req.params.user;       // user requesting
